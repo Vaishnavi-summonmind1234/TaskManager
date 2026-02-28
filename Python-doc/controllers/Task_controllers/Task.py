@@ -292,3 +292,22 @@ def priority_update(id: int, priority: str):
         con.rollback()
         print("Priority update error:", e)
         return None
+    
+def UserTask(user_id: int, task_id: int):
+    con = get_connection()
+    try:
+        cur = con.cursor()
+        cur.execute("""
+            SELECT t.*
+            FROM tasks t
+            JOIN task_assignments ta
+                ON ta.task_id = t.id
+            WHERE ta.user_id = %s
+            AND ta.task_id = %s
+        """, (user_id, task_id))
+ 
+        task = cur.fetchone()
+        return task
+    finally:
+        cur.close()
+        con.close()

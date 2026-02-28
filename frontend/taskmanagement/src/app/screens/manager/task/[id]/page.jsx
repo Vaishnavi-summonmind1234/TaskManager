@@ -3,11 +3,12 @@
 import { useEffect, useState } from "react";
 import AddForm from "@/app/components/AddForm";
 import { Menu } from "lucide-react";
-import { showTask, get_taskby_id } from "@/services/task_services";
+import { showTask, get_taskby_id,delete_task } from "@/services/task_services";
 import { useParams } from "next/navigation";
 import { status_update } from "@/services/task_services";
 import { useRouter } from "next/navigation";
 import TopLoader from "@/app/components/loader";
+import toast from "react-hot-toast";
 
 export default function TaskPage() {
   const params = useParams();
@@ -28,11 +29,14 @@ export default function TaskPage() {
   });
   const [allTask, setAllTask] = useState([]);
   const [individualTask, setIndividualTask] = useState({});
+  const [assignToList , setAssignToList] = useState([]);
   const [markAsCompleted, setMarkAsCompleted] = useState(false);
+  const [responseMessage,setResponseMessage] = useState("")
 
   const [content, setContent] = useState("");
   const [commentInput, setCommentInput] = useState("");
   const [comments, setComments] = useState([]);
+  
 
   useEffect(() => {
     async function fetchData() {
@@ -73,7 +77,7 @@ export default function TaskPage() {
     if (taskId) {
       fetchData();
     }
-  }, [taskId]);
+  }, [taskId,responseMessage]);
 
   const handleAddComment = () => {
     if (!commentInput.trim()) return;
@@ -97,14 +101,33 @@ export default function TaskPage() {
     setMarkAsCompleted(true);
     console.log("marking task as completed with ID:", taskId);
     try {
-      const response = status_update(taskId, { status: "Done" });
+      const response = status_update(taskId, { status: "done" });
       console.log("Status update response:", response);
+      setResponseMessage("Task Completed")
+      toast.success ("Task Deleted Sucesssfully");
     } catch (error) {
       console.log("Error updating status:", error);
-    }
-
+    }  
     // Here you would also make an API call to update the task status in the backend
   };
+
+  const handleDeleteTask = () => {
+    console.log("deleting task id ",taskId )
+    try{
+      setLoading(true);
+      const response = delete_task(taskId)
+      console.log(response)
+      router.replace("/screens/manager")
+      setLoading(false)
+      setResponseMessage("Task Deleted Sucesssfully")
+      toast.success ("Task Deleted Sucesssfully");
+    }catch(error){
+      setLoading(false);
+      console.log('error while deleting task : ',error)
+      toast.error('failed to delete Task');
+    }
+  }
+  console.log("individualtask outside function: ",individualTask);
 
   function handleSubmit(e) {
     console.log(formData);
@@ -204,6 +227,7 @@ export default function TaskPage() {
               </div>
 
               <div className="mt-6">
+                <h2 className="text-gray-300 font-sm mb-2">{individualTask.status}</h2>
                 <h2 className="text-gray-300 font-sm mb-2">Description</h2>
                 <p className="text-gray-400 leading-relaxed text-xs sm:text-sm">
                   {individualTask.description}
@@ -235,19 +259,37 @@ export default function TaskPage() {
 
               {/* Action Buttons */}
               <div className="mt-8 flex flex-col sm:flex-row gap-4">
+              {individualTask.status !== "done" ?  
                 <button
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white p-2 w-fit rounded-xl font-medium transition duration-300 shadow-lg"
+                  className="flex-1  bg-indigo-600 hover:bg-indigo-700 text-white p-2 w-fit rounded-xl font-medium transition duration-300 shadow-lg"
                   onClick={() => handleCompleteTask()}
                 >
                   Mark as Completed
                 </button>
+              : 
+                 <div
+                  className="flex-1 text-center  bg-green-600 hover:bg-green-700 text-white p-2 w-fit rounded-xl font-medium transition duration-300 shadow-lg"
+                >
+                  Completed 
+                </div>  
+              }
+
 
                 <button
-                  className="flex-1 bg-purple-500 hover:bg-purple-600 text-white p-2 w-fit rounded-xl font-medium transition duration-300 shadow-lg "
-                  onClick={() => setUpdateStatus(true)}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white p-2 w-fit rounded-xl font-medium transition duration-300 shadow-lg"
+                  onClick={() => handleDeleteTask()}
                 >
-                  Edit Tasks
+                  Delete Task
                 </button>
+
+                  {individualTask.status !== "done" ? 
+                  <button
+                    className="flex-1 bg-purple-500 hover:bg-purple-600 text-white p-2 w-fit rounded-xl font-medium transition duration-300 shadow-lg "
+                    onClick={() => setUpdateStatus(true)}
+                  >
+                    Edit Tasks
+                  </button>  
+                :null}
               </div>
             </div>
             {updateStatus && (

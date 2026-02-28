@@ -10,29 +10,22 @@ def assign_task(id: int, data: Assign_schema):
     try:
         cur = con.cursor()
 
-        cur.execute("""
-            INSERT INTO task_assignments (task_id, user_id)
-            VALUES (%s, %s)
-            RETURNING id, task_id, user_id, assigned_at
-        """, (id, data.user_id))
-
-        assignment = cur.fetchone()
+        for user_id in data.user_ids:
+            cur.execute("""
+                INSERT INTO task_assignments (task_id, user_id)
+                VALUES (%s, %s)
+                ON CONFLICT (task_id, user_id) DO NOTHING
+            """, (id, user_id))
 
         con.commit()
         cur.close()
         con.close()
 
-        return {
-            "id": assignment[0],
-            "task_id": assignment[1],
-            "user_id": assignment[2],
-            "assigned_at": assignment[3]
-        }
+        return {"task_id": id, "assigned_users": data.user_ids}
 
     except Exception as e:
         con.rollback()
         con.close()
-        print("Assign error:", e)
         raise HTTPException(status_code=500, detail=str(e))
 
 def task_assignees(task_id:int):

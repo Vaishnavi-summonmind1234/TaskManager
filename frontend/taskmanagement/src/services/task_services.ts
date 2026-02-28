@@ -45,14 +45,14 @@ export const task_update=async(id:number,data:{
 
 })=>{
     console.log("values in update service",id,data);
-const updateTask=await axiosinstance.put(`task/updade/${id}`,data)
+const updateTask=await axiosinstance.put(`task/update/${id}`,data)
    return updateTask.data
 
 }
 export const status_update=async(id:number,data:{
     status:string
 })=>{
-    const res=await axiosinstance.put(`/task/${id}/status`,data)
+    const res=await axiosinstance.patch(`/task/${id}/status`,data)
     return res.data
 
 }

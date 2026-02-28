@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends,HTTPException,Query
 from controllers.Task_controllers.Assign import assign_task,task_assignees,delete_task_assigned
 from controllers.Task_controllers.Task_update import task_update_logs
 from controllers.Task_controllers.Task_filters import get_tasks_filtered
+from controllers.Task_controllers.Task import UserTask  
 
 task_route=APIRouter()
 
@@ -145,3 +146,17 @@ def filter_tasks(
         title=title,
         assignee_id=assignee_id
     )
+
+@task_route.get('/{task_id}/task')
+def get_assigned_task(
+    task_id: int,
+    current_user: dict = Depends(get_current_user)
+):
+    user_id = current_user["id"]
+ 
+    task = UserTask(user_id, task_id)
+ 
+    if not task:
+        raise HTTPException(status_code=403, detail="Not authorized")
+ 
+    return task    

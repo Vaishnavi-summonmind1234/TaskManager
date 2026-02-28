@@ -1,9 +1,7 @@
 from pydantic import BaseModel
 from datetime import datetime,date
-from typing import Optional
+from typing import Optional,List
 
 class Assign_schema(BaseModel):
-    
-   
-    user_id: int
+     user_ids: List[int]
     

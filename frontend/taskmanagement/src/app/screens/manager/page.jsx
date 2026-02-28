@@ -64,7 +64,7 @@ export default function DashboardPage() {
               className={` flex  items-center  w-full py-3 text-xs font-medium rounded-lg hover:bg-purple-700 transition-all uppercase ${activeTab === "tasks" ? "bg-purple-700" : null}`}
             >
               <ClipboardPlus className="ml-3 mr-3" height={16} width={16} />
-              Create Tasks
+              Tasks
             </button>
 
             <button

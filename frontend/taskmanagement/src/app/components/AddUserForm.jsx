@@ -94,7 +94,7 @@ export const AddUserForm = ({ id, role, returnFalse, edit, cancel }) => {
 
     try {
       setLoading(true);
-      if (!edit && userDetailContext.role_id === 1) {
+      if (!edit) {
         console.log("add user by admin")
         const data = await addUser({
           name: formData.fullName,
@@ -105,7 +105,7 @@ export const AddUserForm = ({ id, role, returnFalse, edit, cancel }) => {
         console.log(data);
         toast.success("user added successfully");
       }
-      if (edit && userDetailContext.role_id === 1) {
+      if (edit) {
         console.log("update/edit user data by admin")
         const response = await updateUser(id, {
           name: formData.fullName,
@@ -115,16 +115,16 @@ export const AddUserForm = ({ id, role, returnFalse, edit, cancel }) => {
         console.log(response);
         toast.success("user updated successfully");
       }
-      if (edit && userDetailContext.role_id === 2 || userDetailContext.role_id === 1) {
-        console.log("update user by employee or admin")
-        const response = await updateUser(id, {
-          name: formData.fullName,
-          email: formData.email,
-          password: formData.password,
-        });
-        console.log(response);
-        toast.success("user updated successfully");  
-      }
+      // if (edit && userDetailContext.role_id === 2 || userDetailContext.role_id === 1) {
+      //   console.log("update user by employee or admin")
+      //   const response = await updateUser(id, {
+      //     name: formData.fullName,
+      //     email: formData.email,
+      //     password: formData.password,
+      //   });
+      //   console.log(response);
+      //   toast.success("user updated successfully");  
+      // }
       setLoading(false);  
       router.replace("/screens/manager");
     } catch (error) {

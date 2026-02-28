@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import RichTextEditor from "./RichTextEditer";
 import Select from "react-select";
 import { addTask, task_update } from "@/services/task_services";
 import { addAttachment } from "@/services/attachment_services";
 import { addComment } from "@/services/comment_services";
-import { title } from "node:process";
+import { userDetails } from "@/services/user_detail_services";
 import { useUser } from "../contexts/userContext";
 import { User } from "lucide-react";
+import { assign } from "@/services/assignServices";
 
 export default function AddForm({ id, role, editing, returnFalse, cancel }) {
   console.log(
@@ -35,13 +36,14 @@ export default function AddForm({ id, role, editing, returnFalse, cancel }) {
     priority: "",
     assignedTo: [],
   });
+  const [users,setUsers] = useState([])
   const [errors, setErrors] = useState({});
 
-  const users = [
-    { value: 1, label: "divyam Bagauli" },
-    { value: 2, label: "Harsh sharma" },
-    { value: 3, label: "Pankaj kumar" },
-  ];
+  // const users = [
+  //   { value: 1, label: "divyam Bagauli" },
+  //   { value: 2, label: "Harsh sharma" },
+  //   { value: 3, label: "Pankaj kumar" },
+  // ];
 
   const [status, setStatus] = useState("");
   const [priority, setPriority] = useState("");
@@ -92,6 +94,22 @@ export default function AddForm({ id, role, editing, returnFalse, cancel }) {
       color: "white",
     }),
   };
+
+  useEffect(() => {
+  const fetchUser = async () => {
+    const response = await userDetails();
+
+    const formattedUsers = response.map((user) => ({
+      value: user.id,
+      label: user.name,
+    }));
+
+    setUsers(formattedUsers);
+    console.log("response of all user : ", formattedUsers);
+  };
+
+  fetchUser();
+}, [editing, id, role]);
 
 
   const handleSendReply = (id, value) => {
@@ -149,6 +167,7 @@ export default function AddForm({ id, role, editing, returnFalse, cancel }) {
   };
 
   async function handleSubmit(e) {
+    
     e.preventDefault();
     // const newErrors = {};
 
@@ -211,6 +230,7 @@ export default function AddForm({ id, role, editing, returnFalse, cancel }) {
       // 🟢 MANAGER → CREATE TASK
       // ===============================
       if (role === 1 ) {
+        
         console.log("sending data for creation...");
         const payload = {
           title: formData.title,
@@ -234,6 +254,18 @@ export default function AddForm({ id, role, editing, returnFalse, cancel }) {
           console.log("Created Task:", response);
           taskId = response?.id;
         }
+      }
+      // task assign 
+      if(role===1){
+        if(!taskId){
+          taskId = id
+        }
+        const assignedToIds = formData.assignedTo.map(
+          (user) => user.value
+        );
+        console.log("assignTO:",taskId);
+        const response = await assign(taskId, assignedToIds);
+        console.log("response for assign",response);
       }
 
 
@@ -321,6 +353,7 @@ export default function AddForm({ id, role, editing, returnFalse, cancel }) {
     } catch (error) {
       console.error("Error:", error);
     }
+    console.log("users consoleing at last : ",users)
   }
 
   return (
@@ -467,19 +500,19 @@ export default function AddForm({ id, role, editing, returnFalse, cancel }) {
             Assign To
           </label>
           <Select
-            options={users}
-            value={formData.assignedTo}
-            placeholder="Select employee..."
-            isMulti
-            styles={customStyles}
-            closeMenuOnSelect={false}
-            onChange={(selectedOptions) =>
-              setFormData((prev) => ({
-                ...prev,
-                assignedTo: selectedOptions || [],
-              }))
-            }
-          />
+  options={users}
+  value={formData.assignedTo || []}
+  placeholder="Select employee..."
+  isMulti
+  styles={customStyles}
+  closeMenuOnSelect={false}
+  onChange={(selectedOptions) =>
+    setFormData((prev) => ({
+      ...prev,
+      assignedTo: selectedOptions || [],
+    }))
+  }
+/>
           {errors.assignedTo && (
             <p className="text-red-400 text-sm mt-1">{errors.assignedTo}</p>
           )}
@@ -490,7 +523,7 @@ export default function AddForm({ id, role, editing, returnFalse, cancel }) {
         <h1 className="mb-2 text-sm font-medium text-gray-300">Status</h1>
 
         <div className="flex flex-wrap gap-3">
-          {["todo", "doing", "testing", "Manager Review", "Done"].map(
+          {["todo", "doing", "testing", "manager_review", "done"].map(
             (item) => (
               <button
                 key={item}
@@ -508,7 +541,7 @@ export default function AddForm({ id, role, editing, returnFalse, cancel }) {
                     : "bg-gray-700 text-gray-300 hover:bg-gray-800"
                 }`}
               >
-                {item}
+                {item === "manager_review" ?  "Manager Review" : item}
               </button>
             ),
           )}

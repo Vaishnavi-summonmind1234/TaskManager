@@ -89,8 +89,8 @@ export default function TaskComonents() {
                     </span>
                   </td>
 
-                  <td className="px-6 py-4"></td>
-                  {/* <td className="px-6 py-4">{task.priority}</td> */}
+                  {/* <td className="px-6 py-4"></td> */}
+                  <td className="px-6 py-4">{new Date(task.created_at).toLocaleDateString()}</td>
                   {/* <td className="px-6 py-4">{task.estimatedTime} hrs</td>
             <td className="px-6 py-4">{task.completionPercentage}%</td> */}
 

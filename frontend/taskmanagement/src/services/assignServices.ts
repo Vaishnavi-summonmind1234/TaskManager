@@ -1,10 +1,16 @@
 import axiosinstance from "./api";
 
 
-export const assign = async(id:number)=>{
-    const res= await axiosinstance.post(`/task/${id}/assign`)
-    return res.data
-}
+export const assign = async (
+  taskId: number,
+  userIds: number[]
+) => {
+  const res = await axiosinstance.post(
+    `/task/${taskId}/assign`,
+    { user_ids: userIds }   // 👈 this must match backend schema
+  );
+  return res.data;
+};
 
 export const getassignees=async(id:number)=>{
     const res=await axiosinstance.get(`/task/${id}/assignees`)
