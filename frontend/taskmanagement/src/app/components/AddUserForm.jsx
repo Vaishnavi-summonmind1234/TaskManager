@@ -8,7 +8,8 @@ import { userById } from "@/services/user_detail_services";
 import TopLoader from "./loader";
 import toast from "react-hot-toast";
 
-export const AddUserForm = ({ id, role, returnFalse, edit, cancel }) => {
+
+export const AddUserForm = ({ id, role, returnFalse, edit, cancel,handleRefreshPage }) => {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -18,16 +19,17 @@ export const AddUserForm = ({ id, role, returnFalse, edit, cancel }) => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const router = useRouter();
-  const {userDetailContext,setUserDetailContext} = useUser()
+  const {userDetailContext,setUserdetailContext} = useUser()
   const [userData, setUserData] = useState(null);
   const [editUserData, setEditUserData] = useState({});
 
    
   useEffect(() => {
     setLoading(true);
-    console.log("id", id);
+    console.log("id in user from", id);
     const  fetchUserData = async () => {
       if (edit) {
+        setLoading(true)
         const response = await userById(id)
         console.log("userbyId:response", response);
         const formatedUser = {
@@ -113,7 +115,21 @@ export const AddUserForm = ({ id, role, returnFalse, edit, cancel }) => {
           password: formData.password,
         });
         console.log(response);
+        console.log(response.data);
+        if (userDetailContext.id === id){
+          const formatedAdminData = {
+            id : response.data[0],
+            email: response.data[2],
+            name: response.data[1],
+            role_id:response.data[3]
+          }
+          console.log("formated data",formatedAdminData);
+          setUserdetailContext(formatedAdminData)
+        }
         toast.success("user updated successfully");
+      }
+      if(returnFalse){
+        returnFalse();
       }
       // if (edit && userDetailContext.role_id === 2 || userDetailContext.role_id === 1) {
       //   console.log("update user by employee or admin")
@@ -125,8 +141,11 @@ export const AddUserForm = ({ id, role, returnFalse, edit, cancel }) => {
       //   console.log(response);
       //   toast.success("user updated successfully");  
       // }
-      setLoading(false);  
-      router.replace("/screens/manager");
+      handleRefreshPage();
+      setLoading(false);
+      // if(!edit){
+      //   router.replace("/screens/manager");
+      // } 
     } catch (error) {
       setLoading(false);
       toast.error("Error submitting form: " );
@@ -136,7 +155,7 @@ export const AddUserForm = ({ id, role, returnFalse, edit, cancel }) => {
 
   return (
     <div className="">
-      
+      {loading && <TopLoader />}
       <form onSubmit={handleSubmit} className="space-y-6">
         {[
           { name: "fullName", label: "Name", type: "text"   },

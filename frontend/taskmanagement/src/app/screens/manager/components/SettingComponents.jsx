@@ -6,6 +6,10 @@ import { AddUserForm } from "@/app/components/AddUserForm";
 
 export default function SettingComponent() {
   const router = useRouter();
+  const handleRefreshPage = () => {
+    console.log("admin data update by admin");
+    router.refresh();
+  }
   const { userDetailContext } = useUser();
   console.log("user detail in setting component:", userDetailContext);
 
@@ -20,6 +24,7 @@ export default function SettingComponent() {
           role={1}
           cancel={false}
           edit={true}
+          handleRefreshPage={handleRefreshPage}
         />
       </div>
     

@@ -5,30 +5,39 @@ import { Plus, Search } from "lucide-react";
 // import CreateTask from "@/app/components/AddTasks";
 import { AddUserForm } from "@/app/components/AddUserForm";
 import { userDetails } from "@/services/user_detail_services";
+import TopLoader from "@/app/components/loader";
 
 export default function ManagerUser() {
   const router = useRouter();
   const [addUser, setAdduser] = useState(false);
+  const [refreshUser,setRefreshUser] = useState(0) 
   const [users, setUsers] = useState([]);
   const [searchUser, setSearchUser] = useState("");
+  const [loading,setLoading] = useState(false)
 
+  const handleRefreshPage = () => {
+    setRefreshUser(prev => prev + 1)
+  } 
   const returnFalse = () => {
-    console.log("hello false");
     setAdduser(false);
   };
+
   useEffect(() => {
     async function fetchUser() {
       try {
+        setLoading(true);
         const displayuser = await userDetails();
         console.log("userdetails:", displayuser);
         setUsers(displayuser);
         console.log("users:", users);
+        setLoading(false);
       } catch (error) {
         console.log(error);
+        setLoading(false);
       }
     }
     fetchUser();
-  }, []);
+  }, [refreshUser]);
 
   const handleSearchUser = (e) => {
     e.preventDefault();
@@ -40,6 +49,7 @@ export default function ManagerUser() {
 
   return (
     <div className="flex flex-col bg-gray-800 mt-5 rounded-xl relative">
+      {loading && <TopLoader />}
       <h1 className="text-xl sm:text-2xl text-white font-semibold my-3 ml-3">
         Users
       </h1>
@@ -99,12 +109,15 @@ export default function ManagerUser() {
                   Add New User
                 </h1>
               </div>
+              {addUser &&
               <AddUserForm
                 role={1}
                 cancel={true}
                 returnFalse={returnFalse}
                 edit={false}
+                handleRefreshPage={handleRefreshPage}
               />
+}
             </div>
           </div>
         ) : null}

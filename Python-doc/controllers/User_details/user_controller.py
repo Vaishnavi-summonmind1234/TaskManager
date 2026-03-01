@@ -10,7 +10,12 @@ def get_all_users(current_user: dict = Depends(admin_acess)):
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT id, name, email, role_id, created_at FROM users;")
+    cursor.execute("""
+        SELECT id, name, email, role_id, created_at
+        FROM users
+        WHERE deleted_at IS NULL
+    """)
+
     rows = cursor.fetchall()
 
     cursor.close()

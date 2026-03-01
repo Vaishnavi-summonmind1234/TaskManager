@@ -4,30 +4,41 @@ import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import CreateTask from "@/app/components/AddTasks";
 import { showTask } from "@/services/task_services";
+import TopLoader from "@/app/components/loader";
 
 export default function TaskComonents() {
+  const [loading,setLoading] = useState(false)
+ const [refreshUser,setRefreshUser] = useState(0)
   const router = useRouter();
   const [addTask, setAddTask] = useState(false);
+  // const 
   const [tasks, setTasks] = useState([]);
   const returnFalse = () => {
     setAddTask(false);
   };
+  const handleRefreshPage = () => {
+    setRefreshUser(prev => prev + 1)
+  } 
 
   useEffect(() => {
     const fetchTask = async () => {
       try {
+        setLoading(true)
         const response = await showTask();
         setTasks(response);
         console.log("Tasks:", response);
+        setLoading(false)
       } catch (error) {
         console.log("Error fetching tasks:", error);
+        setLoading(false)
       }
     };
     fetchTask();
-  }, []);
+  }, [refreshUser]);
 
   return (
     <div className="flex flex-col bg-gray-800 mt-5 rounded-xl relative">
+      {loading && <TopLoader /> }
       <h1 className="text-xl sm:text-2xl text-white font-semibold my-3 ml-3">
         New Task
       </h1>
@@ -45,7 +56,7 @@ export default function TaskComonents() {
       </div>
 
       <div className="mt-2 bg-gray-800 rounded-xl border border-gray-700">
-        {addTask ? <CreateTask returnFalse={returnFalse} /> : null}
+        {addTask ? <CreateTask returnFalse={returnFalse} handleRefreshPage={handleRefreshPage}/> : null}
 
         {/* Scroll Container */}
         <div className="max-h-112 overflow-hidden hover:overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">

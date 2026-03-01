@@ -10,8 +10,9 @@ import { userDetails } from "@/services/user_detail_services";
 import { useUser } from "../contexts/userContext";
 import { User } from "lucide-react";
 import { assign } from "@/services/assignServices";
+import toast from "react-hot-toast";
 
-export default function AddForm({ id, role, editing, returnFalse, cancel }) {
+export default function AddForm({ id, role, editing, returnFalse, cancel,handleRefreshPage }) {
   console.log(
     "AddForm Rendered with id:",
     id,
@@ -36,6 +37,7 @@ export default function AddForm({ id, role, editing, returnFalse, cancel }) {
     priority: "",
     assignedTo: [],
   });
+  const [loading,setLoading] = useState(false);
   const [users,setUsers] = useState([])
   const [errors, setErrors] = useState({});
 
@@ -224,6 +226,7 @@ export default function AddForm({ id, role, editing, returnFalse, cancel }) {
     console.log(content);
 
     try {
+      setLoading(true)
       let response;
       let taskId;
       // ===============================
@@ -350,10 +353,18 @@ export default function AddForm({ id, role, editing, returnFalse, cancel }) {
       if (returnFalse) {
         returnFalse();
       }
+      setLoading(false)
+      if(editing){
+        toast.success("Task updated Sucessfully")
+      }else{
+        toast.success("Task Added Sucessfully")
+      }
+      handleRefreshPage()
     } catch (error) {
+      toast.error("somtthing went wrong")
       console.error("Error:", error);
+      setLoading(false)
     }
-    console.log("users consoleing at last : ",users)
   }
 
   return (

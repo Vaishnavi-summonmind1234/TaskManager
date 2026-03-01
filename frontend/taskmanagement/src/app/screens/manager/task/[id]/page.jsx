@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import AddForm from "@/app/components/AddForm";
 import { Menu } from "lucide-react";
-import { showTask, get_taskby_id,delete_task } from "@/services/task_services";
+import { showTask, get_taskby_id, delete_task } from "@/services/task_services";
+import { getassignees } from "@/services/assignServices";
 import { useParams } from "next/navigation";
 import { status_update } from "@/services/task_services";
 import { useRouter } from "next/navigation";
@@ -29,14 +30,17 @@ export default function TaskPage() {
   });
   const [allTask, setAllTask] = useState([]);
   const [individualTask, setIndividualTask] = useState({});
-  const [assignToList , setAssignToList] = useState([]);
-  const [markAsCompleted, setMarkAsCompleted] = useState(false);
-  const [responseMessage,setResponseMessage] = useState("")
+  const [assignToList, setAssignToList] = useState([]);
+  const [markAsCompleted, setMarkAsCompleted] = useState(0);
+  const [refreshPage, setRefreshPage] = useState(0);
 
   const [content, setContent] = useState("");
   const [commentInput, setCommentInput] = useState("");
   const [comments, setComments] = useState([]);
-  
+
+  const handleRefreshPage = () => {
+    setRefreshPage(prev => prev + 1)
+  }
 
   useEffect(() => {
     async function fetchData() {
@@ -48,7 +52,6 @@ export default function TaskPage() {
         ]);
 
         setAllTask(allTask);
-        console.log("allTasks:", allTask);
         const formattedTask = {
           id: singleTask[0],
           title: singleTask[1],
@@ -64,9 +67,15 @@ export default function TaskPage() {
           updated_at: singleTask[11],
           deleted_at: singleTask[12],
         };
+        console.log("formated task ",formattedTask)
         setIndividualTask(formattedTask);
-        console.log("formattedTask:", formattedTask);
-        console.log("individualTask:", individualTask);
+
+        const response = await getassignees(taskId);
+        console.log("responseL:", response);
+        const assignedToIds = response.map((user) => user.user_id);
+        setAssignToList(assignedToIds);
+        console.log("assign this task to : ", assignedToIds);
+
         setLoading(false);
       } catch (error) {
         setLoading(false);
@@ -77,7 +86,7 @@ export default function TaskPage() {
     if (taskId) {
       fetchData();
     }
-  }, [taskId,responseMessage]);
+  }, [taskId, refreshPage]);
 
   const handleAddComment = () => {
     if (!commentInput.trim()) return;
@@ -97,43 +106,37 @@ export default function TaskPage() {
     setOpensidebar(!openSidebar);
   };
 
-  const handleCompleteTask = () => {
+  const handleCompleteTask = async() => {
     setMarkAsCompleted(true);
     console.log("marking task as completed with ID:", taskId);
     try {
-      const response = status_update(taskId, { status: "done" });
+      const response = await status_update(taskId, { status: "done" });
       console.log("Status update response:", response);
-      setResponseMessage("Task Completed")
-      toast.success ("Task Deleted Sucesssfully");
+      handleRefreshPage();
+      toast.success("Task Completed");
     } catch (error) {
       console.log("Error updating status:", error);
-    }  
+    }
     // Here you would also make an API call to update the task status in the backend
   };
 
-  const handleDeleteTask = () => {
-    console.log("deleting task id ",taskId )
-    try{
+  const handleDeleteTask = async() => {
+    console.log("deleting task id ", taskId);
+    try {
       setLoading(true);
-      const response = delete_task(taskId)
-      console.log(response)
-      router.replace("/screens/manager")
-      setLoading(false)
-      setResponseMessage("Task Deleted Sucesssfully")
-      toast.success ("Task Deleted Sucesssfully");
-    }catch(error){
+      const response = await delete_task(taskId);
+      console.log(response);
+      router.replace("/screens/manager");
       setLoading(false);
-      console.log('error while deleting task : ',error)
-      toast.error('failed to delete Task');
+      handleRefreshPage();
+      toast.success("Task Deleted Sucesssfully");
+    } catch (error) {
+      setLoading(false);
+      console.log("error while deleting task : ", error);
+      toast.error("failed to delete Task");
     }
-  }
-  console.log("individualtask outside function: ",individualTask);
+  };
 
-  function handleSubmit(e) {
-    console.log(formData);
-    e.preventDefault();
-    console.log("hello world");
-  }
   return (
     <>
       {/* <div className="min-h-screen flex bg-linear-to-br from-gray-900 via-gray-800 to-gray-900 p-2 sm:p-2"> */}
@@ -210,40 +213,83 @@ export default function TaskPage() {
             <div className="bg-gray-800/80 backdrop-blur-lg shadow-2xl p-5 sm:p-8 border border-gray-700">
               <div className="flex flex-col lg:flex-row lg:justify-between gap-6">
                 <div>
-                  <h1 className="text-white text-lg sm:text-lg font-semibold">
+                  <div className=" ">
+                  <h1 className="text-white text-xl sm:text-xl font-semibold ">
                     {individualTask.title}
+                  <h1 className="text-gray-300 text-xs ">By : {individualTask.assigned_by} {new Date(individualTask.created_at).toLocaleDateString()}
                   </h1>
+                  </h1>
+                  </div>
 
-                  <div className="mt-2 flex items-center gap-4 flex-wrap">
-                    <span className="px-3 py-1 text-xs bg-red-500/20 text-red-400 rounded-full border border-red-500">
+                  <div className="flex gap-4 mt-3 items-center ">
+                    <h1 className="text-white text-sm font-semibold ">Priority : </h1>
+                    <span className="px-3 py-1 text-sm text-red-400  ">
                       {individualTask.priority}
                     </span>
+                  </div>
 
-                    <span className="text-gray-400 text-xs">
-                      {individualTask.created_at}
+                  <div className="flex gap-4 mt-3 items-center ">
+                    <h1 className="text-white text-sm font-semibold">Start Date : </h1>
+                    <span className="px-3 py-1 text-sm text-white">
+                      {individualTask.start_date}
                     </span>
                   </div>
+
+                  <div className="flex gap-4 mt-3 items-center ">
+                    <h1 className="text-white text-sm font-semibold">End Date :</h1>
+                    <span className="px-3 py-1 text-sm text-white">
+                      {individualTask.end_date}
+                    </span>
+                  </div>
+
+                  <div className="flex gap-4 mt-3 items-center ">
+                    <h1 className="text-white text-sm font-semibold">Estimated Time :  </h1>
+                    <span className="px-3 py-1 text-sm text-white">
+                      {individualTask.estimate_time} Hour
+                    </span>
+                  </div>
+
+                  <div className="flex gap-4 mt-3 items-center ">
+                    <h1 className="text-white text-sm font-semibold">Status : </h1>
+                    <span className="px-3 py-1 text-sm text-white">
+                      {individualTask.status}
+                    </span>
+                  </div>
+
+                  <div className="flex gap-4 mt-3 items-center ">
+                    <h1 className="text-white text-sm font-semibold">Descriptions : </h1>
+                    <span className="px-3 py-1 text-sm text-white">
+                      {individualTask.description}
+                    </span>
+                  </div>
+
+                  
+
                 </div>
               </div>
 
-              <div className="mt-6">
-                <h2 className="text-gray-300 font-sm mb-2">{individualTask.status}</h2>
+              {/* <div className="mt-6">
+                <h2 className="text-gray-300 font-sm mb-2">
+                  {individualTask.status}
+                </h2>
                 <h2 className="text-gray-300 font-sm mb-2">Description</h2>
                 <p className="text-gray-400 leading-relaxed text-xs sm:text-sm">
                   {individualTask.description}
                 </p>
-              </div>
+              </div> */}
 
               <div className="border-t border-gray-700 my-6"></div>
 
               <div className="flex flex-col sm:flex-row sm:justify-between gap-6">
                 <div className="bg-gray-900/60 p-4 rounded-xl flex-1 border border-gray-700 flex">
                   <h2 className="text-white text-sm mb-2">Assigned To :</h2>
-                  <p className="text-gray-300 text-sm ml-1">
-                    {" "}
-                    {individualTask.assigned_by}
-                  </p>
-                  {/* <p className="text-gray-400 text-xs">Frontend Developer</p> */}
+
+                  {assignToList.map((user, i) => (
+                    <p key={i} className="text-gray-300 text-sm ml-1">
+                      {user},
+                    </p>
+                  ))}
+                  {/* <p className="text-gray-400 text-xs">{assignToList}</p> */}
                 </div>
 
                 <div className="bg-gray-900/60 p-4 rounded-xl flex-1 border border-gray-700 flex">
@@ -259,37 +305,34 @@ export default function TaskPage() {
 
               {/* Action Buttons */}
               <div className="mt-8 flex flex-col sm:flex-row gap-4">
-              {individualTask.status !== "done" ?  
-                <button
-                  className="flex-1  bg-indigo-600 hover:bg-indigo-700 text-white p-2 w-fit rounded-xl font-medium transition duration-300 shadow-lg"
-                  onClick={() => handleCompleteTask()}
-                >
-                  Mark as Completed
-                </button>
-              : 
-                 <div
-                  className="flex-1 text-center  bg-green-600 hover:bg-green-700 text-white p-2 w-fit rounded-xl font-medium transition duration-300 shadow-lg"
-                >
-                  Completed 
-                </div>  
-              }
-
+                {individualTask.status !== "done" ? (
+                  <button
+                    className="flex-1  bg-indigo-600 hover:bg-indigo-700 text-white p-2 w-full rounded-xl font-medium transition duration-300 shadow-lg"
+                    onClick={() => handleCompleteTask()}
+                  >
+                    Mark as Completed
+                  </button>
+                ) : (
+                  <div className="flex-1 text-center  bg-green-600 hover:bg-green-700 text-white p-2 w-full rounded-xl font-medium transition duration-300 shadow-lg">
+                    Completed
+                  </div>
+                )}
 
                 <button
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white p-2 w-fit rounded-xl font-medium transition duration-300 shadow-lg"
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white p-2 w-full rounded-xl font-medium transition duration-300 shadow-lg"
                   onClick={() => handleDeleteTask()}
                 >
                   Delete Task
                 </button>
 
-                  {individualTask.status !== "done" ? 
+                {individualTask.status !== "done" ? (
                   <button
-                    className="flex-1 bg-purple-500 hover:bg-purple-600 text-white p-2 w-fit rounded-xl font-medium transition duration-300 shadow-lg "
+                    className="flex-1 bg-purple-500 hover:bg-purple-600 text-white p-2 w-full rounded-xl font-medium transition duration-300 shadow-lg "
                     onClick={() => setUpdateStatus(true)}
                   >
                     Edit Tasks
-                  </button>  
-                :null}
+                  </button>
+                ) : null}
               </div>
             </div>
             {updateStatus && (
@@ -304,6 +347,7 @@ export default function TaskPage() {
                   editing={true}
                   role={1}
                   cancel={false}
+                  handleRefreshPage={handleRefreshPage}
                 />
                 {/* <Form /> */}
               </div>

@@ -11,6 +11,7 @@ import {
 } from "@/services/user_detail_services";
 import { useParams } from "next/navigation";
 import TopLoader from "@/app/components/loader";
+import toast from "react-hot-toast";
 
 export default function TaskPage() {
   const params = useParams();
@@ -21,10 +22,16 @@ export default function TaskPage() {
   const [openSidebar, setOpensidebar] = useState(true);
   const [users, setUsers] = useState([]);
   const [individualUser, setIndividualUser] = useState({});
+  const [refreshPage, setRefreshPage] = useState(0);
+
   const router = useRouter();
   const handleSidebar = () => {
     setOpensidebar(!openSidebar);
   };
+
+  const handleRefreshPage = () => {
+    setRefreshPage(prev => prev + 1)
+  }
 
   useEffect(() => {
     async function fetchData() {
@@ -60,7 +67,7 @@ export default function TaskPage() {
     if (id) {
       fetchData();
     }
-  }, [id]);
+  }, [id,refreshPage]);
 
   const returnFalse = () => {
     setUpdateStatus(false);
@@ -71,10 +78,11 @@ export default function TaskPage() {
     try {
       const response = await deleteUser(userId);
       console.log("User deleted successfully:", response);
-
-      router.back();
+      toast.success("User Deleted Sucessfully");
+      router.replace("/screens/manager");
     } catch (error) {
       console.log("Failed to delete user", error);
+      toast.error("Failed To Delete user");
     }
   }
 
@@ -159,12 +167,16 @@ export default function TaskPage() {
                     {individualUser.name}
                   </h1>
 
-                  <h2 className="text-gray-300 font-sm my-2">
+                  <div className="flex gap-4 mt-3 items-center ">
+                    <h1 className="text-white text-sm font-semibold">Email :  </h1>
+                   <span className="px-3 py-1 text-sm text-white">
                     {individualUser.email}
-                  </h2>
+                  </span>
+                  </div>
 
-                  <div className="mt-2 flex items-center gap-4 flex-wrap">
-                    <span
+                   <div className="flex gap-4 mt-3 items-center ">
+                    <h1 className="text-white text-sm font-semibold">Role :  </h1>
+                   <span
                       className={`px-3 py-1 rounded-full text-xs font-medium
                 ${
                   individualUser.role === "manager"
@@ -176,13 +188,14 @@ export default function TaskPage() {
                     >
                       {individualUser.role === 1 ? "Admin" : "Employee"}
                     </span>
-                    {/* <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500">
-                      {individualUser.role_id}
-                    </span> */}
+                  </div>
+                 
 
-                    <span className="text-gray-400 text-xs">
-                      {new Date(individualUser.created_at).toLocaleDateString()}
-                    </span>
+                     <div className="flex gap-4 mt-3 items-center ">
+                    <h1 className="text-white text-sm font-semibold">Created At </h1>
+                   <span className="px-3 py-1 text-sm text-white">
+                    {new Date(individualUser.created_at).toLocaleDateString()}
+                  </span>
                   </div>
                 </div>
               </div>
@@ -194,7 +207,7 @@ export default function TaskPage() {
               {/* Action Buttons */}
               <div className="mt-8 flex flex-col sm:flex-row gap-4">
                 <button
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-medium transition duration-300 shadow-lg"
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-medium transition duration-300 shadow-lg"
                   onClick={() => {
                     handleDeleteUser(individualUser.id);
                   }}
@@ -232,6 +245,7 @@ export default function TaskPage() {
                     returnFalse={returnFalse}
                     edit={true}
                     id={individualUser.id}
+                    handleRefreshPage={handleRefreshPage}
                   />
                 </div>
               </div>

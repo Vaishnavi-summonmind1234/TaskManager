@@ -29,24 +29,31 @@ def assign_task(id: int, data: Assign_schema):
         raise HTTPException(status_code=500, detail=str(e))
 
 def task_assignees(task_id:int):
-    con=get_connection()
+    con = get_connection()
     try:
-        cur=con.cursor()
-        cur.execute("SELECT id,task_id,user_id,assigned_at FROM task_assignments WHERE task_id=%s",(task_id,))
-        rows=cur.fetchall()
-        
-        
-        result=[] 
+        cur = con.cursor()
+
+        cur.execute(
+            "SELECT id,task_id,user_id,assigned_at FROM task_assignments WHERE task_id=%s",
+            (task_id,)
+        )
+
+        rows = cur.fetchall()
+
+        result = []
+
         for row in rows:
             result.append({
-        "id": row[0],
-        "task_id": row[1],
-        "user_id": row[2],
-        "assigned_at": row[3]
-    }) 
-            return result
+                "id": row[0],
+                "task_id": row[1],
+                "user_id": row[2],
+                "assigned_at": row[3]
+            })
+
+        return result   # ✅ correct place
+
     except Exception as e:
-        return e    
+        return str(e) 
     
 def delete_task_assigned(task_id:int,user_id:int):
     con=get_connection()

@@ -1,7 +1,9 @@
 "use client";
 import React, { useState } from "react";
 import AddForm from "./AddForm"; 
-export default function CreateTask({ returnFalse }) {
+
+export default function CreateTask({ returnFalse,handleRefreshPage }) {
+  
   return (
     <>
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -23,7 +25,7 @@ export default function CreateTask({ returnFalse }) {
           </div>
 
           {/* <Form returnFalse={returnFalse} /> */}
-          <AddForm buttonName={"Create Task"} role={1} returnFalse={returnFalse} cancel={true} editing={false}/>
+          <AddForm buttonName={"Create Task"} role={1} returnFalse={returnFalse} cancel={true} editing={false} handleRefreshPage={handleRefreshPage}/>
         </div>
       </div>
     </>

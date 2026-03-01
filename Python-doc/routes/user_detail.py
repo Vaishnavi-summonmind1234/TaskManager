@@ -30,7 +30,7 @@ def add_user_by_admin(data: RegisterRequest ,current_user:dict=Depends(admin_ace
 
 @user_route.put('/update/{user_id}')
 def update(user_id:int,data:updatedProfile , current_user: dict = Depends(get_current_user)):
-    if current_user["role_id"] != "1" and user_id != current_user["id"]:
+    if current_user["role_id"] != 1 and user_id != current_user["id"]:
         raise HTTPException(status_code=403, detail="Not allowed to update this user ")
     result = update_Profile(user_id, data)
 
@@ -42,7 +42,9 @@ def update(user_id:int,data:updatedProfile , current_user: dict = Depends(get_cu
 
 @user_route.delete('/delete_user/{user_id}')
 def deleted(user_id:int, current_user: dict = Depends(get_current_user)):
-    if current_user["role_id"]!="1" and user_id!=current_user["id"]:
+    print("current_user:", current_user)
+
+    if current_user["role_id"]!=1 and user_id!=current_user["id"]:
         raise HTTPException(status_code=403, detail="Not allowed to delete user")
     result = delete_user(user_id)
 

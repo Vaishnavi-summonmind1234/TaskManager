@@ -53,7 +53,12 @@ def login(email: str, password: str):
 
     try:
         cur = con.cursor(cursor_factory=RealDictCursor)
-        cur.execute("SELECT * FROM users WHERE email=%s", (email,))
+        cur.execute("""
+        SELECT *
+        FROM users
+        WHERE email=%s
+        AND deleted_at IS NULL
+        """,  (email,))
         login_user = cur.fetchone()
 
         if not login_user:

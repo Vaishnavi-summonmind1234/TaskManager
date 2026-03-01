@@ -5,9 +5,11 @@ import { useUser } from "@/app/contexts/userContext";
 import { ActivityTimeLines } from "@/app/components/ActivityTimeLines";
 import { showTask } from "@/services/task_services";
 import { useRouter } from "next/navigation";
+import TopLoader from "@/app/components/loader"; 
 
 export default function DashboardComonents() {
   const [tasks, setTasks] = useState([]);
+  const [loading ,setLoading] = useState(false)
   const router = useRouter();
   const { userDetail } = useUser();
   console.log(userDetail);
@@ -15,18 +17,21 @@ export default function DashboardComonents() {
   useEffect(() => {
     const fetchtasks = async () => {
       try {
+        setLoading(true)
         const response = await showTask();
         setTasks(response);
         console.log("Tasks response:", response);
+        setLoading(false)
       } catch (error) {
         console.error("Error fetching tasks:", error);
+        setLoading(false)
       }
     };
-
     fetchtasks();
   }, [userDetail]);
   return (
     <div className="mt-5 flex flex-col gap-5">
+      {loading && <TopLoader/>}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Completed */}
         <button className="flex flex-col justify-center w-full h-36 bg-indigo-500 rounded-2xl shadow-lg hover:scale-105 hover:bg-indigo-600 transition-all duration-300 text-white p-4">
