@@ -14,11 +14,12 @@ import toast from "react-hot-toast";
 export default function TaskPage() {
   const params = useParams();
   const taskId = params.id;
-  console.log("taskId:", taskId);
+  // console.log("taskId:", taskId);
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [updateStatus, setUpdateStatus] = useState(false);
   const [openSidebar, setOpensidebar] = useState(true);
+  const [taskAssigment, setTaskAssignment] = useState([]);
   const [status, setStatus] = useState("");
   const [formData, setFormData] = useState({
     startDate: "",
@@ -39,8 +40,8 @@ export default function TaskPage() {
   const [comments, setComments] = useState([]);
 
   const handleRefreshPage = () => {
-    setRefreshPage(prev => prev + 1)
-  }
+    setRefreshPage((prev) => prev + 1);
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -67,15 +68,16 @@ export default function TaskPage() {
           updated_at: singleTask[11],
           deleted_at: singleTask[12],
         };
-        console.log("formated task ",formattedTask)
+        // console.log("formated task ", formattedTask);
         setIndividualTask(formattedTask);
 
         const response = await getassignees(taskId);
         console.log("responseL:", response);
-        const assignedToIds = response.map((user) => user.user_id);
-        setAssignToList(assignedToIds);
-        console.log("assign this task to : ", assignedToIds);
-
+        setTaskAssignment(response);
+        // const assignedToIds = response.map((user) => user.user_id);
+        // setAssignToList(assignedToIds);
+        // console.log("assign this task to : ", assignedToIds);
+        console.log("taskAssignment inside ", taskAssigment);
         setLoading(false);
       } catch (error) {
         setLoading(false);
@@ -106,7 +108,7 @@ export default function TaskPage() {
     setOpensidebar(!openSidebar);
   };
 
-  const handleCompleteTask = async() => {
+  const handleCompleteTask = async () => {
     setMarkAsCompleted(true);
     console.log("marking task as completed with ID:", taskId);
     try {
@@ -120,7 +122,7 @@ export default function TaskPage() {
     // Here you would also make an API call to update the task status in the backend
   };
 
-  const handleDeleteTask = async() => {
+  const handleDeleteTask = async () => {
     console.log("deleting task id ", taskId);
     try {
       setLoading(true);
@@ -135,6 +137,7 @@ export default function TaskPage() {
       console.log("error while deleting task : ", error);
       toast.error("failed to delete Task");
     }
+    console.log("taskAssignment", taskAssigment);
   };
 
   return (
@@ -180,7 +183,7 @@ export default function TaskPage() {
                   </div>
 
                   <p className="text-gray-400 text-sm mb-2">
-                    Assigned by: {item.assigned_by}
+                    Assigned by: {taskAssigment[0]?.assignedBy_name}
                   </p>
 
                   <div>
@@ -214,57 +217,68 @@ export default function TaskPage() {
               <div className="flex flex-col lg:flex-row lg:justify-between gap-6">
                 <div>
                   <div className=" ">
-                  <h1 className="text-white text-xl sm:text-xl font-semibold ">
-                    {individualTask.title}
-                  <h1 className="text-gray-300 text-xs ">By : {individualTask.assigned_by} {new Date(individualTask.created_at).toLocaleDateString()}
-                  </h1>
-                  </h1>
+                    <h1 className="text-white text-xl sm:text-xl font-semibold ">
+                      {individualTask.title}
+                    </h1>
+                    <h1 className="text-gray-300 text-xs ">
+                      By : {taskAssigment[0]?.assignedBy_name}{" "}
+                      {new Date(individualTask.created_at).toLocaleDateString()}
+                    </h1>
                   </div>
 
                   <div className="flex gap-4 mt-3 items-center ">
-                    <h1 className="text-white text-sm font-semibold ">Priority : </h1>
+                    <h1 className="text-white text-sm font-semibold ">
+                      Priority :{" "}
+                    </h1>
                     <span className="px-3 py-1 text-sm text-red-400  ">
                       {individualTask.priority}
                     </span>
                   </div>
 
                   <div className="flex gap-4 mt-3 items-center ">
-                    <h1 className="text-white text-sm font-semibold">Start Date : </h1>
+                    <h1 className="text-white text-sm font-semibold">
+                      Start Date :{" "}
+                    </h1>
                     <span className="px-3 py-1 text-sm text-white">
                       {individualTask.start_date}
                     </span>
                   </div>
 
                   <div className="flex gap-4 mt-3 items-center ">
-                    <h1 className="text-white text-sm font-semibold">End Date :</h1>
+                    <h1 className="text-white text-sm font-semibold">
+                      End Date :
+                    </h1>
                     <span className="px-3 py-1 text-sm text-white">
                       {individualTask.end_date}
                     </span>
                   </div>
 
                   <div className="flex gap-4 mt-3 items-center ">
-                    <h1 className="text-white text-sm font-semibold">Estimated Time :  </h1>
+                    <h1 className="text-white text-sm font-semibold">
+                      Estimated Time :{" "}
+                    </h1>
                     <span className="px-3 py-1 text-sm text-white">
                       {individualTask.estimate_time} Hour
                     </span>
                   </div>
 
                   <div className="flex gap-4 mt-3 items-center ">
-                    <h1 className="text-white text-sm font-semibold">Status : </h1>
+                    <h1 className="text-white text-sm font-semibold">
+                      Status :{" "}
+                    </h1>
                     <span className="px-3 py-1 text-sm text-white">
                       {individualTask.status}
                     </span>
                   </div>
 
                   <div className="flex gap-4 mt-3 items-center ">
-                    <h1 className="text-white text-sm font-semibold">Descriptions : </h1>
+                    <h1 className="text-white text-sm font-semibold">
+                      Descriptions :{" "}
+                    </h1>
                     <span className="px-3 py-1 text-sm text-white">
                       {individualTask.description}
                     </span>
                   </div>
-
-                  
-
                 </div>
               </div>
 
@@ -284,12 +298,14 @@ export default function TaskPage() {
                 <div className="bg-gray-900/60 p-4 rounded-xl flex-1 border border-gray-700 flex">
                   <h2 className="text-white text-sm mb-2">Assigned To :</h2>
 
-                  {assignToList.map((user, i) => (
+                  {/* {assignToList.map((user, i) => (
                     <p key={i} className="text-gray-300 text-sm ml-1">
                       {user},
                     </p>
-                  ))}
-                  {/* <p className="text-gray-400 text-xs">{assignToList}</p> */}
+                  ))} */}
+                  <p className="text-white text-sm ml-2">
+                    {taskAssigment[0]?.assignedAt_name}
+                  </p>
                 </div>
 
                 <div className="bg-gray-900/60 p-4 rounded-xl flex-1 border border-gray-700 flex">

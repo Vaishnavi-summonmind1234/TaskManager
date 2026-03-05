@@ -33,10 +33,10 @@ def task_assignees(task_id:int):
     try:
         cur = con.cursor()
 
-        cur.execute(
-            "SELECT id,task_id,user_id,assigned_at FROM task_assignments WHERE task_id=%s",
-            (task_id,)
-        )
+        cur.execute(""" SELECT t.assigned_by AS admin_id, admin.name AS admin_name, ta.user_id AS employee_id, emp.name AS employee_name
+                    FROM tasks t JOIN users admin ON t.assigned_by = admin.id JOIN task_assignments ta ON t.id = ta.task_id
+                    JOIN users emp ON ta.user_id = emp.id WHERE t.id = %s """,
+        (task_id,))
 
         rows = cur.fetchall()
 
@@ -44,10 +44,10 @@ def task_assignees(task_id:int):
 
         for row in rows:
             result.append({
-                "id": row[0],
-                "task_id": row[1],
-                "user_id": row[2],
-                "assigned_at": row[3]
+                "assignedBy_id": row[0],
+                "assignedBy_name": row[1],
+                "assignedAt_id": row[2],
+                "assignedAt_name": row[3]
             })
 
         return result   # ✅ correct place

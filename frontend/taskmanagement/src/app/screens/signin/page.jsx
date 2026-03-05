@@ -52,9 +52,23 @@ export default function SigninPage() {
       console.log("login Sucess", data);
       toast.success("login Sucessfull");
     } catch (error) {
-      console.log(error);
+      if (error.response) {
+        const status = error.response.status;
+
+        if (status === 401) {
+          toast.error(`Error ${status} , Invalid email or password`);
+          setLoading(false);
+          return;
+        }
+
+        if (status === 403) {
+          toast.error(`Error ${status}, Forbidden`);
+          setLoading(false);
+          return;
+        }
+      }
+      toast.error("Signin failed.Something went wrong");
       setLoading(false);
-      toast.error("Signin failed. Please try again.");
     }
   }
 
@@ -101,7 +115,7 @@ export default function SigninPage() {
                     [field.name]: e.target.value,
                   });
                 }}
-                className="px-2 py-2 rounded-xl border border-gray-700 bg-gray-900 text-white placeholder-gray-500 outline-none transition-all focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm placeholder:text-sm"
+                className="px-4 py-3 rounded-xl border border-gray-700 bg-gray-900 text-white placeholder-gray-500 outline-none transition-all focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm placeholder:text-sm"
               />
               {errors[field.name] && (
                 <p className="text-red-400 text-sm mt-1">
