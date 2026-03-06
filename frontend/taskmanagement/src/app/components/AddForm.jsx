@@ -20,7 +20,7 @@ export default function AddForm({
   cancel,
   handleRefreshPage,
   individualTask,
-  taskAssigment
+  taskAssigment,
 }) {
   console.log(
     "AddForm Rendered with id:",
@@ -32,7 +32,7 @@ export default function AddForm({
     "individualTask",
     individualTask,
     "taskAssignment",
-    taskAssigment
+    taskAssigment,
   );
   const { userDetailContext } = useUser();
   console.log("User Detail in AddForm:", userDetailContext);
@@ -60,7 +60,7 @@ export default function AddForm({
   //   { value: 3, label: "Pankaj kumar" },
   // ];
   const today = new Date().toLocaleDateString("en-CA");
-  console.log("today date",today)
+  console.log("today date", today);
   const [status, setStatus] = useState("");
   const [priority, setPriority] = useState("");
   const [content, setContent] = useState("");
@@ -93,7 +93,7 @@ export default function AddForm({
       ...provided,
       backgroundColor: "#364153",
       fontSize: "14px",
-      color:"white"
+      color: "white",
     }),
     option: (provided, state) => ({
       ...provided,
@@ -103,9 +103,9 @@ export default function AddForm({
       fontSize: "14px",
     }),
     singleValue: (provided) => ({
-    ...provided,
-    color: "white",   // 👈 selected value color
-  }),
+      ...provided,
+      color: "white", // 👈 selected value color
+    }),
     // multiValue: (provided) => ({
     //   ...provided,
     //   backgroundColor: "#101828",
@@ -129,8 +129,27 @@ export default function AddForm({
       console.log("response of all user : ", formattedUsers);
     };
 
+    setFormData((prev) => ({
+      ...prev,
+      title: individualTask?.title || "",
+      description: individualTask?.description || "",
+      status: individualTask?.status || "",
+      priority: individualTask?.priority || "",
+      startDate: individualTask?.start_date || "",
+      endDate: individualTask?.end_date || "",
+      estimatedTime: individualTask?.estimate_time || "",
+      approach: individualTask?.approach || "",
+      completionPercentage: individualTask?.completion_percentage || "",
+      assignedTo: taskAssigment
+        ? {
+            value: taskAssigment[0].assignedAt_id,
+            label: taskAssigment[0].assignedAt_name,
+          }
+        : null,
+    }));
+    console.log("form data after set value", formData);
     fetchUser();
-  }, [editing, id, role]);
+  }, [editing, id, role, taskAssigment, individualTask]);
 
   const handleSendReply = (id, value) => {
     // console.log(reply called)
@@ -187,10 +206,10 @@ export default function AddForm({
   };
 
   async function handleSubmit(e) {
+    console.log(formData);
     e.preventDefault();
     const newErrors = {};
 
-    
     if (role === 1) {
       if (!formData.title.trim()) {
         newErrors.title = "Title is required";
@@ -206,7 +225,7 @@ export default function AddForm({
         newErrors.endDate = "End Date is required";
       }
 
-      if (!formData.estimatedTime.trim()) {
+      if (!formData.estimatedTime) {
         newErrors.estimatedTime = "Estimated Time is required";
       }
 
@@ -235,7 +254,7 @@ export default function AddForm({
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       console.log(errors);
-      toast.error("all field are required")
+      toast.error("all field are required");
       return;
     }
     setErrors({});
@@ -302,64 +321,70 @@ export default function AddForm({
         // ideally this should be updateTask()
       }
 
+      // if (taskId) {
+      //   // Upload Attachments in Parallel
+      //   if (formData.attachments.length > 0) {
+      //     const response = await Promise.all(
+      //       formData.attachments.map((file) =>
+      //         addAttachment({
+      //           id: taskId,
+      //           file: file.name,
+      //         })
+      //       )
+      //     );
+      //     console.log("Attachments Upload Response:", response);
+      //   }
+
+      //   // Upload Comments in Parallel
+      //   console.log("Uploading Comments...", formData.comments);
+      //   if (formData.comments.length > 0) {
+      //     const response = await Promise.all(
+      //       formData.comments.map((comment) =>
+      //         addComment(taskId, {
+      //           comment: comment.text,
+      //           parentId: comment.parentId || null,
+      //         }),
+      //       ),
+      //     );
+      //     console.log("Comments Upload Response", response);
+      //   }
+      // }
+
       if (taskId) {
         // Upload Attachments in Parallel
-        // if (formData.attachments.length > 0) {
-        //   const response = await Promise.all(
-        //     formData.attachments.map((file) =>
-        //       addAttachment({
-        //         id: taskId,
-        //         file: file.name,
-        //       })
-        //     )
-        //   );
-        //   console.log("Attachments Upload Response:", response);
-        // }
-
-        // Upload Comments in Parallel
-        console.log("Uploading Comments...", formData.comments);
-        if (formData.comments.length > 0) {
-          const response = await Promise.all(
-            formData.comments.map((comment) =>
-              addComment(taskId, {
-                comment: comment.text,
-                parentId: comment.parentId || null,
-              }),
-            ),
-          );
-          console.log("Comments Upload Response", response);
-        }
-      }
-
-      if (taskId) {
-        // Upload Attachments in Parallel
-        // if (formData.attachments.length > 0) {
-        //   const response = await Promise.all(
-        //     formData.attachments.map((file) =>
-        //       addAttachment({
-        //         id: taskId,
-        //         file: file.name,
-        //       })
-        //     )
-        //   );
-        //   console.log("Attachments Upload Response:", response);
-        // }
-
-        // Upload Comments in Parallel
-        console.log("Uploading Comments...", formData.comments);
-        if (editing) {
-          if (formData.comments.length > 0) {
+        try {
+          if (formData.attachments.length > 0) {
             const response = await Promise.all(
-              formData.comments.map((comment) =>
-                addComment(taskId, {
-                  comment: comment.text,
-                  parentId: comment.parentId || null,
+              formData.attachments.map((file) =>
+                addAttachment({
+                  id: taskId,
+                  file: file,
                 }),
               ),
             );
-            console.log("Comments Upload Response", response);
+            console.log("Attachments Upload Response:", response);
+            toast.success("file uploaded Sucessfully");
           }
+        } catch (error) {
+          toast.error("failed to upload file");
+          console.log("faild to upload file", error);
         }
+
+        // Upload Comments in Parallel
+        console.log("Uploading Comments...", formData.comments);
+        // if (editing) {
+        //   if (formData.comments.length > 0) {
+        //     const response = await Promise.all(
+        //       formData.comments.map((comment) =>
+        //         addComment(taskId, {
+        //           comment: comment.text,
+        //           parentId: comment.parentId || null,
+        //         }),
+        //       ),
+        //     );
+        //     console.log("Comments Upload Response", response);
+        //   }
+        // }
       }
 
       // alert("Task saved successfully 🚀");
@@ -388,7 +413,7 @@ export default function AddForm({
     >
       {/* {titile} */}
 
-      {role === 1 && 
+      {role === 1 && (
         <div className="flex flex-col col-span-1">
           <label className="mb-2 ml-1 text-sm font-medium text-gray-300">
             Title
@@ -397,7 +422,7 @@ export default function AddForm({
           <input
             type="text"
             name="title"
-            value={formData.title || ""}
+            value={formData.title}
             placeholder="Title"
             onChange={(e) => {
               setFormData({
@@ -412,7 +437,7 @@ export default function AddForm({
             <p className="text-red-400 text-sm mt-1">{errors.title}</p>
           )}
         </div>
-      }
+      )}
 
       {/* startdata */}
       {role === 1 && (
@@ -424,7 +449,7 @@ export default function AddForm({
             type="date"
             name="startDate"
             min={today}
-            value={formData.startDate || ""}
+            value={formData.startDate}
             onChange={(e) => {
               setFormData({
                 ...formData,
@@ -450,7 +475,7 @@ export default function AddForm({
             min={today}
             type="date"
             name="endDate"
-            value={formData.endDate || ""}
+            value={formData.endDate}
             onChange={(e) => {
               setFormData({
                 ...formData,
@@ -474,10 +499,10 @@ export default function AddForm({
           <input
             type="number"
             name="estimatedTime"
-            value={formData.estimatedTime || ""}
+            value={formData.estimatedTime}
             min={0}
             onChange={(e) => {
-              let value = e.target.value;
+              let value = Number(e.target.value);
               value = Math.max(0, value);
               setFormData({
                 ...formData,
@@ -501,7 +526,7 @@ export default function AddForm({
           <input
             type="number"
             name="completionPercentage"
-            value={formData.completionPercentage || ""}
+            value={formData.completionPercentage}
             max={100}
             onChange={(e) => {
               let value = e.target.value;
@@ -530,7 +555,7 @@ export default function AddForm({
           </label>
           <Select
             options={users}
-            value={formData.assignedTo || []}
+            value={formData.assignedTo}
             placeholder="Select an employee"
             styles={customStyles}
             closeMenuOnSelect={true}

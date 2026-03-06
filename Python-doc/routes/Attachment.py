@@ -10,19 +10,27 @@ attach_route=APIRouter()
 
 
 @attach_route.post('/tasks/{task_id}/attachment')
-async def add_attachments(task_id: int,file:UploadFile=File(...), current_user: dict = Depends(get_current_user)):
-    Base_Dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    upload_dir=os.path.join(Base_Dir,'Static','upload-files')
-    os.makedirs(upload_dir,exist_ok=True)
-    unique_name=f'{uuid.uuid4()}_{file.filename}'  #it is useed to add unique name to file that have uuid+filename ex:vgdvhjdbjjd_ab.pdf
-    file_path=os.path.join(upload_dir,unique_name)
+async def add_attachments(
+    task_id: int,
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
 
-    with open(file_path,'wb') as f:
-       contents = await file.read()   # ✅ FIX
-       f.write(contents)
-    
-    
-    return add_Attach(task_id, unique_name, file_path, current_user)
+    Base_Dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    upload_dir = os.path.join(Base_Dir, 'Static', 'upload-files')
+
+    os.makedirs(upload_dir, exist_ok=True)
+
+    unique_name = f"{uuid.uuid4()}_{file.filename}"
+    file_path = os.path.join(upload_dir, unique_name)
+
+    with open(file_path, "wb") as f:
+        contents = await file.read()
+        f.write(contents)
+
+    file_url = f"/files/{unique_name}"
+
+    return add_Attach(task_id, unique_name, file_url, current_user)
 
 
     

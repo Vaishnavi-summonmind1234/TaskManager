@@ -10,6 +10,7 @@ import { status_update } from "@/services/task_services";
 import { useRouter } from "next/navigation";
 import TopLoader from "@/app/components/loader";
 import toast from "react-hot-toast";
+import { getAttachment } from "@/services/attachment_services";
 
 export default function TaskPage() {
   const params = useParams();
@@ -31,7 +32,7 @@ export default function TaskPage() {
   });
   const [allTask, setAllTask] = useState([]);
   const [individualTask, setIndividualTask] = useState({});
-  const [assignToList, setAssignToList] = useState([]);
+  const [attachments, setAttachments] = useState([]);
   const [markAsCompleted, setMarkAsCompleted] = useState(0);
   const [refreshPage, setRefreshPage] = useState(0);
 
@@ -53,7 +54,7 @@ export default function TaskPage() {
         ]);
 
         setAllTask(allTask);
-        console.log("all tasks for manager : ",allTask)
+        console.log("all tasks for manager : ", allTask);
         const formattedTask = {
           id: singleTask[0],
           title: singleTask[1],
@@ -68,7 +69,7 @@ export default function TaskPage() {
           created_at: singleTask[10],
           updated_at: singleTask[11],
           deleted_at: singleTask[12],
-          completion_percentage:singleTask[13]
+          completion_percentage: singleTask[13],
         };
         console.log("formated task ", formattedTask);
         setIndividualTask(formattedTask);
@@ -90,6 +91,19 @@ export default function TaskPage() {
     if (taskId) {
       fetchData();
     }
+  }, [taskId, refreshPage]);
+
+  useEffect(() => {
+    async function fetchAttachament() {
+      try {
+        const response = await getAttachment(taskId);
+        setAttachments(response);
+        console.log("attachment response:", response);
+      } catch (error) {
+        console.log("error while geting attachament", error);
+      }
+    }
+    fetchAttachament();
   }, [taskId, refreshPage]);
 
   const handleAddComment = () => {
@@ -195,7 +209,9 @@ export default function TaskPage() {
                     </div>
 
                     <div className="w-full bg-gray-700 rounded-full h-2">
-                      <div className={`bg-green-600 h-2 rounded-full w-[${item.completion_percentage}%]`}></div>
+                      <div
+                        className={`bg-green-600 h-2 rounded-full w-[${item.completion_percentage}%]`}
+                      ></div>
                     </div>
                   </div>
                 </button>
@@ -310,14 +326,27 @@ export default function TaskPage() {
                   </p>
                 </div>
 
-                <div className="bg-gray-900/60 p-4 rounded-xl flex-1 border border-gray-700 flex">
-                  <h2 className="text-gray-300 text-sm mb-2">Attachments : </h2>
-                  <p className="text-indigo-400 text-sm cursor-pointer hover:underline ml-1">
-                    {individualTask.attachments &&
-                    individualTask.attachments.length > 0
-                      ? individualTask.attachments.join(", ")
-                      : "No attachments"}
-                  </p>
+                <div className="bg-gray-900/60 p-4 rounded-xl flex-1 border border-gray-700">
+                  <h2 className="text-gray-300 text-sm mb-2">Attachments :</h2>
+
+                  {attachments.length > 0 ? (
+                    attachments.map((item) => (
+                      <p
+                        key={item.id}
+                        className="text-indigo-400 text-sm cursor-pointer hover:underline"
+                      >
+                        <a
+                          href={`http://127.0.0.1:8000${item.file_url}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {item.file_name}
+                        </a>
+                      </p>
+                    ))
+                  ) : (
+                    <p className="text-gray-400 text-sm">No attachments</p>
+                  )}
                 </div>
               </div>
 
