@@ -1,141 +1,164 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { userAllTasks } from "@/services/task_services";
+import { useUser } from "@/app/contexts/userContext";
 
 export default function TaskComonents() {
   const router = useRouter();
-  const tasks = [
-    {
-      name: "Dashboard UI creations creations creations creations",
-      owner: "Pankaj",
-      status: "doing",
-      startDate: "12 Jan 2026",
-      endDate: "15 Jan 2026",
-      estimatedTime: 10,
-      completionPercentage: 40,
-      priority: "High",
-    },
-    {
-      name: "Dashboard UI",
-      owner: "Pankaj",
-      status: "testing",
-      startDate: "12 Jan 2026",
-      endDate: "15 Jan 2026",
-      estimatedTime: 10,
-      completionPercentage: 40,
-      priority: "Medium",
-    },
-    {
-      name: "Dashboard UI",
-      owner: "Pankaj",
-      status: "Completed",
-      startDate: "12 Jan 2026",
-      endDate: "15 Jan 2026",
-      estimatedTime: 10,
-      completionPercentage: 40,
-      priority: "Low",
-    },
-    {
-      name: "Dashboard UI",
-      owner: "Pankaj",
-      status: "Pending",
-      startDate: "12 Jan 2026",
-      endDate: "15 Jan 2026",
-      estimatedTime: 10,
-      completionPercentage: 40,
-      priority: "High",
-    },
-    {
-      name: "Dashboard UI",
-      owner: "Pankaj",
-      status: "Pending",
-      startDate: "12 Jan 2026",
-      endDate: "15 Jan 2026",
-      estimatedTime: 10,
-      completionPercentage: 40,
-      priority: "High",
-    },
-    {
-      name: "Dashboard UI",
-      owner: "Pankaj",
-      status: "Pending",
-      startDate: "12 Jan 2026",
-      endDate: "15 Jan 2026",
-      estimatedTime: 10,
-      completionPercentage: 40,
-      priority: "High",
-    },
-    {
-      name: "Dashboard UI",
-      owner: "Pankaj",
-      status: "Pending",
-      startDate: "12 Jan 2026",
-      endDate: "15 Jan 2026",
-      estimatedTime: 10,
-      completionPercentage: 40,
-      priority: "High",
-    },
-    {
-      name: "Dashboard UI",
-      owner: "Pankaj",
-      status: "Pending",
-      startDate: "12 Jan 2026",
-      endDate: "15 Jan 2026",
-      estimatedTime: 10,
-      completionPercentage: 40,
-      priority: "High",
-    },
-    {
-      name: "Dashboard UI",
-      owner: "Pankaj",
-      status: "Pending",
-      startDate: "12 Jan 2026",
-      endDate: "15 Jan 2026",
-      estimatedTime: 10,
-      completionPercentage: 40,
-      priority: "High",
-    },
-    {
-      name: "Dashboard UI",
-      owner: "Pankaj",
-      status: "Pending",
-      startDate: "12 Jan 2026",
-      endDate: "15 Jan 2026",
-      estimatedTime: 10,
-      completionPercentage: 40,
-      priority: "High",
-    },
-    {
-      name: "Dashboard UI",
-      owner: "Pankaj",
-      status: "Pending",
-      startDate: "12 Jan 2026",
-      endDate: "15 Jan 2026",
-      estimatedTime: 10,
-      completionPercentage: 40,
-      priority: "High",
-    },
-    {
-      name: "Dashboard UI",
-      owner: "Pankaj",
-      status: "Pending",
-      startDate: "12 Jan 2026",
-      endDate: "15 Jan 2026",
-      estimatedTime: 10,
-      completionPercentage: 40,
-      priority: "High",
-    },
-    {
-      name: "API Integration",
-      owner: "Rahul",
-      status: "Completed",
-      startDate: "10 Jan 2026",
-      endDate: "12 Jan 2026",
-      estimatedTime: 6,
-      completionPercentage: 100,
-      priority: "Medium",
-    },
-  ];
+  const {userDetailContext} = useUser();
+  const id = userDetailContext.id
+  const [tasks,setTasks] = useState([]);
+  console.log("user_id:",id);
+
+  // const tasks = [
+  //   {
+  //     name: "Dashboard UI creations creations creations creations",
+  //     owner: "Pankaj",
+  //     status: "doing",
+  //     startDate: "12 Jan 2026",
+  //     endDate: "15 Jan 2026",
+  //     estimatedTime: 10,
+  //     completionPercentage: 40,
+  //     priority: "High",
+  //   },
+  //   {
+  //     name: "Dashboard UI",
+  //     owner: "Pankaj",
+  //     status: "testing",
+  //     startDate: "12 Jan 2026",
+  //     endDate: "15 Jan 2026",
+  //     estimatedTime: 10,
+  //     completionPercentage: 40,
+  //     priority: "Medium",
+  //   },
+  //   {
+  //     name: "Dashboard UI",
+  //     owner: "Pankaj",
+  //     status: "Completed",
+  //     startDate: "12 Jan 2026",
+  //     endDate: "15 Jan 2026",
+  //     estimatedTime: 10,
+  //     completionPercentage: 40,
+  //     priority: "Low",
+  //   },
+  //   {
+  //     name: "Dashboard UI",
+  //     owner: "Pankaj",
+  //     status: "Pending",
+  //     startDate: "12 Jan 2026",
+  //     endDate: "15 Jan 2026",
+  //     estimatedTime: 10,
+  //     completionPercentage: 40,
+  //     priority: "High",
+  //   },
+  //   {
+  //     name: "Dashboard UI",
+  //     owner: "Pankaj",
+  //     status: "Pending",
+  //     startDate: "12 Jan 2026",
+  //     endDate: "15 Jan 2026",
+  //     estimatedTime: 10,
+  //     completionPercentage: 40,
+  //     priority: "High",
+  //   },
+  //   {
+  //     name: "Dashboard UI",
+  //     owner: "Pankaj",
+  //     status: "Pending",
+  //     startDate: "12 Jan 2026",
+  //     endDate: "15 Jan 2026",
+  //     estimatedTime: 10,
+  //     completionPercentage: 40,
+  //     priority: "High",
+  //   },
+  //   {
+  //     name: "Dashboard UI",
+  //     owner: "Pankaj",
+  //     status: "Pending",
+  //     startDate: "12 Jan 2026",
+  //     endDate: "15 Jan 2026",
+  //     estimatedTime: 10,
+  //     completionPercentage: 40,
+  //     priority: "High",
+  //   },
+  //   {
+  //     name: "Dashboard UI",
+  //     owner: "Pankaj",
+  //     status: "Pending",
+  //     startDate: "12 Jan 2026",
+  //     endDate: "15 Jan 2026",
+  //     estimatedTime: 10,
+  //     completionPercentage: 40,
+  //     priority: "High",
+  //   },
+  //   {
+  //     name: "Dashboard UI",
+  //     owner: "Pankaj",
+  //     status: "Pending",
+  //     startDate: "12 Jan 2026",
+  //     endDate: "15 Jan 2026",
+  //     estimatedTime: 10,
+  //     completionPercentage: 40,
+  //     priority: "High",
+  //   },
+  //   {
+  //     name: "Dashboard UI",
+  //     owner: "Pankaj",
+  //     status: "Pending",
+  //     startDate: "12 Jan 2026",
+  //     endDate: "15 Jan 2026",
+  //     estimatedTime: 10,
+  //     completionPercentage: 40,
+  //     priority: "High",
+  //   },
+  //   {
+  //     name: "Dashboard UI",
+  //     owner: "Pankaj",
+  //     status: "Pending",
+  //     startDate: "12 Jan 2026",
+  //     endDate: "15 Jan 2026",
+  //     estimatedTime: 10,
+  //     completionPercentage: 40,
+  //     priority: "High",
+  //   },
+  //   {
+  //     name: "Dashboard UI",
+  //     owner: "Pankaj",
+  //     status: "Pending",
+  //     startDate: "12 Jan 2026",
+  //     endDate: "15 Jan 2026",
+  //     estimatedTime: 10,
+  //     completionPercentage: 40,
+  //     priority: "High",
+  //   },
+  //   {
+  //     name: "API Integration",
+  //     owner: "Rahul",
+  //     status: "Completed",
+  //     startDate: "10 Jan 2026",
+  //     endDate: "12 Jan 2026",
+  //     estimatedTime: 6,
+  //     completionPercentage: 100,
+  //     priority: "Medium",
+  //   },
+  // ];
+
+  useEffect(() => {
+      const fetchTask = async () => {
+        try {
+          // setLoading(true);
+          const response = await userAllTasks(id);
+          setTasks(response);
+          console.log("Tasks:", response);
+          // setLoading(false);
+        } catch (error) {
+          console.log("Error fetching tasks:", error);
+          // setLoading(false);
+        }
+      };
+      fetchTask();
+    }, []);
 
   return (
     <div className="flex flex-col bg-gray-800 mt-5 rounded-xl ">
@@ -171,7 +194,7 @@ export default function TaskComonents() {
 
       <div className="mt-2 bg-gray-800 rounded-xl border border-gray-700">
         {/* Scroll Container */}
-        <div className="max-h-112 overflow-auto">
+        <div className="max-h-112 overflow-hidden hover:overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
           <table className="min-w-full text-sm text-left text-gray-300">
             {/* Table Head */}
             <thead className="bg-gray-900 text-gray-400 sticky top-0 z-10">
@@ -193,16 +216,16 @@ export default function TaskComonents() {
                 <tr
                   key={index}
                   className="hover:bg-gray-700 transition duration-200"
-                  onClick={() => router.push("/screens/employee/task")}
+                  onClick={() => router.push(`/screens/employee/task/${task.id}`)}
                 >
-                  <td className="px-6 py-4">{task.name}</td>
-                  <td className="px-6 py-4">{task.owner}</td>
+                  <td className="px-6 py-4">{task.title}</td>
+                  <td className="px-6 py-4">{task.assigned_by_name}</td>
 
                   <td className="px-6 py-4">
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-medium
                 ${
-                  task.status === "Completed"
+                  task.status === "todo"
                     ? "bg-green-500/20 text-green-400"
                     : task.status === "Pending"
                       ? "bg-yellow-500/20 text-yellow-400"
@@ -213,18 +236,18 @@ export default function TaskComonents() {
                     </span>
                   </td>
 
-                  <td className="px-6 py-4">{task.startDate}</td>
-                  <td className="px-6 py-4">{task.endDate}</td>
-                  <td className="px-6 py-4">{task.estimatedTime} hrs</td>
-                  <td className="px-6 py-4">{task.completionPercentage}%</td>
+                  <td className="px-6 py-4">{task.start_date}</td>
+                  <td className="px-6 py-4">{task.end_date}</td>
+                  <td className="px-6 py-4">{task.estimate_time} hrs</td>
+                  {/* <td className="px-6 py-4">{task.completionPercentage}%</td> */}
 
                   <td className="px-6 py-4">
                     <span
                       className={`px-3 py-1 rounded-full text-xs
                 ${
-                  task.priority === "High"
+                  task.priority === "high"
                     ? "bg-red-500/20 text-red-400"
-                    : task.priority === "Medium"
+                    : task.priority === "medium"
                       ? "bg-orange-500/20 text-orange-400"
                       : "bg-blue-500/20 text-blue-400"
                 }`}

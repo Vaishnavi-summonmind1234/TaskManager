@@ -53,6 +53,7 @@ export default function TaskPage() {
         ]);
 
         setAllTask(allTask);
+        console.log("all tasks for manager : ",allTask)
         const formattedTask = {
           id: singleTask[0],
           title: singleTask[1],
@@ -67,8 +68,9 @@ export default function TaskPage() {
           created_at: singleTask[10],
           updated_at: singleTask[11],
           deleted_at: singleTask[12],
+          completion_percentage:singleTask[13]
         };
-        // console.log("formated task ", formattedTask);
+        console.log("formated task ", formattedTask);
         setIndividualTask(formattedTask);
 
         const response = await getassignees(taskId);
@@ -183,17 +185,17 @@ export default function TaskPage() {
                   </div>
 
                   <p className="text-gray-400 text-sm mb-2">
-                    Assigned by: {taskAssigment[0]?.assignedBy_name}
+                    Assigned to: {taskAssigment[0]?.assignedAt_name}
                   </p>
 
                   <div>
                     <div className="flex justify-between text-xs text-gray-400 mb-1">
                       <span>Progress</span>
-                      <span>50%</span>
+                      <span>{item.completion_percentage}</span>
                     </div>
 
                     <div className="w-full bg-gray-700 rounded-full h-2">
-                      <div className="bg-green-600 h-2 rounded-full w-[50%]"></div>
+                      <div className={`bg-green-600 h-2 rounded-full w-[${item.completion_percentage}%]`}></div>
                     </div>
                   </div>
                 </button>
@@ -364,6 +366,8 @@ export default function TaskPage() {
                   role={1}
                   cancel={false}
                   handleRefreshPage={handleRefreshPage}
+                  individualTask={individualTask}
+                  taskAssigment={taskAssigment}
                 />
                 {/* <Form /> */}
               </div>

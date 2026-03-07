@@ -19,6 +19,8 @@ export default function AddForm({
   returnFalse,
   cancel,
   handleRefreshPage,
+  individualTask,
+  taskAssigment
 }) {
   console.log(
     "AddForm Rendered with id:",
@@ -27,6 +29,10 @@ export default function AddForm({
     role,
     "editing:",
     editing,
+    "individualTask",
+    individualTask,
+    "taskAssignment",
+    taskAssigment
   );
   const { userDetailContext } = useUser();
   console.log("User Detail in AddForm:", userDetailContext);
@@ -53,7 +59,8 @@ export default function AddForm({
   //   { value: 2, label: "Harsh sharma" },
   //   { value: 3, label: "Pankaj kumar" },
   // ];
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toLocaleDateString("en-CA");
+  console.log("today date",today)
   const [status, setStatus] = useState("");
   const [priority, setPriority] = useState("");
   const [content, setContent] = useState("");
@@ -86,6 +93,7 @@ export default function AddForm({
       ...provided,
       backgroundColor: "#364153",
       fontSize: "14px",
+      color:"white"
     }),
     option: (provided, state) => ({
       ...provided,
@@ -94,14 +102,18 @@ export default function AddForm({
       cursor: "pointer",
       fontSize: "14px",
     }),
-    multiValue: (provided) => ({
-      ...provided,
-      backgroundColor: "#101828",
-    }),
-    multiValueLabel: (provided) => ({
-      ...provided,
-      color: "white",
-    }),
+    singleValue: (provided) => ({
+    ...provided,
+    color: "white",   // 👈 selected value color
+  }),
+    // multiValue: (provided) => ({
+    //   ...provided,
+    //   backgroundColor: "#101828",
+    // }),
+    // multiValueLabel: (provided) => ({
+    //   ...provided,
+    //   color: "white",
+    // }),
   };
 
   useEffect(() => {
@@ -176,56 +188,57 @@ export default function AddForm({
 
   async function handleSubmit(e) {
     e.preventDefault();
-    // const newErrors = {};
+    const newErrors = {};
 
-    // if (!formData.title.trim()) {
-    //   newErrors.title = "Title is required";
-    // }
+    
+    if (role === 1) {
+      if (!formData.title.trim()) {
+        newErrors.title = "Title is required";
+      }
+      if (!formData.descriptions.trim()) {
+        newErrors.descriptions = "Descriptions is required";
+      }
+      if (!formData.startDate.trim()) {
+        newErrors.startDate = "Start Date is required";
+      }
 
-    // if (!role === 2) {
-    //   if (!formData.descriptions.trim()) {
-    //     newErrors.descriptions = "Descriptions is required";
-    //   }
-    //   if (!formData.startDate.trim()) {
-    //     newErrors.startDate = "Start Date is required";
-    //   }
+      if (!formData.endDate.trim()) {
+        newErrors.endDate = "End Date is required";
+      }
 
-    //   if (!formData.endDate.trim()) {
-    //     newErrors.endDate = "End Date is required";
-    //   }
+      if (!formData.estimatedTime.trim()) {
+        newErrors.estimatedTime = "Estimated Time is required";
+      }
 
-    //   if (!formData.estimatedTime.trim()) {
-    //     newErrors.estimatedTime = "Estimated Time is required";
-    //   }
+      if (formData.assignedTo.length === 0) {
+        newErrors.assignedTo = "Assign Task To employee";
+      }
 
-    //   if (formData.assignedTo.length === 0) {
-    //     newErrors.assignedTo = "Assign Task To employee";
-    //   }
+      if (!formData.priority.trim()) {
+        newErrors.priority = "Priority is required";
+      }
+    }
 
-    //   if (!formData.priority.trim()) {
-    //     newErrors.priority = "Priority is required";
-    //   }
-    // }
+    if (role === 2) {
+      if (!formData.completionPercentage.trim()) {
+        newErrors.completionPercentage = "Completion Percentage is required";
+      }
+      if (!formData.approach) {
+        newErrors.approach = "Approach is required";
+      }
+    }
 
-    // if (role === 2) {
-    //   if (!formData.completionPercentage.trim()) {
-    //     newErrors.completionPercentage = "Completion Percentage is required";
-    //   }
-    //   if (!formData.approach) {
-    //     newErrors.approach = "Approach is required";
-    //   }
-    // }
+    if (!formData.status.trim()) {
+      newErrors.status = "Status is required";
+    }
 
-    // if (!formData.status.trim()) {
-    //   newErrors.status = "Status is required";
-    // }
-
-    // if (Object.keys(newErrors).length > 0) {
-    //   setErrors(newErrors);
-    //   console.log(errors);
-    //   return;
-    // }
-    // setErrors({});
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      console.log(errors);
+      toast.error("all field are required")
+      return;
+    }
+    setErrors({});
 
     console.log("formData", formData);
     console.log(content);
@@ -279,7 +292,6 @@ export default function AddForm({
       // ===============================
       if (role === 2) {
         const payload = {
-          title: formData.title,
           completion_percentage: Number(formData.completionPercentage),
           approach: formData.approach,
           status: formData.status,
@@ -376,29 +388,31 @@ export default function AddForm({
     >
       {/* {titile} */}
 
-      <div className="flex flex-col col-span-1">
-        <label className="mb-2 ml-1 text-sm font-medium text-gray-300">
-          Title
-        </label>
+      {role === 1 && 
+        <div className="flex flex-col col-span-1">
+          <label className="mb-2 ml-1 text-sm font-medium text-gray-300">
+            Title
+          </label>
 
-        <input
-          type="text"
-          name="title"
-          value={formData.title || ""}
-          placeholder="Title"
-          onChange={(e) => {
-            setFormData({
-              ...formData,
-              [e.target.name]: e.target.value,
-            });
-          }}
-          className="px-2 py-2 rounded-xl border border-gray-700 bg-gray-900 text-white placeholder-gray-500
-        outline-none transition-all focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm placeholder:text-sm "
-        />
-        {errors.title && (
-          <p className="text-red-400 text-sm mt-1">{errors.title}</p>
-        )}
-      </div>
+          <input
+            type="text"
+            name="title"
+            value={formData.title || ""}
+            placeholder="Title"
+            onChange={(e) => {
+              setFormData({
+                ...formData,
+                [e.target.name]: e.target.value,
+              });
+            }}
+            className="px-2 py-2 rounded-xl border border-gray-700 bg-gray-900 text-white placeholder-gray-500
+          outline-none transition-all focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm placeholder:text-sm "
+          />
+          {errors.title && (
+            <p className="text-red-400 text-sm mt-1">{errors.title}</p>
+          )}
+        </div>
+      }
 
       {/* startdata */}
       {role === 1 && (

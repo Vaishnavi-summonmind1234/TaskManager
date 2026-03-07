@@ -62,3 +62,9 @@ export const priority_update =async(id:number,data:{
     const res =await axiosinstance.put(`/task/${id}/priority`,data)
     return res.data
 }
+
+export const userAllTasks = async(id:number) => {
+    console.log("id in services:",id)
+    const res = await  axiosinstance.get(`/task/${id}/userAllTasks`)
+    return res.data
+}
