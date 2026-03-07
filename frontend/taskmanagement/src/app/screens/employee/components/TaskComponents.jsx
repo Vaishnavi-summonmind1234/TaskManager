@@ -3,9 +3,11 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { userAllTasks } from "@/services/task_services";
 import { useUser } from "@/app/contexts/userContext";
+import TopLoader from "@/app/components/loader";
 
 export default function TaskComonents() {
   const router = useRouter();
+  const [loading,setLoading] = useState()
   const {userDetailContext} = useUser();
   const id = userDetailContext.id
   const [tasks,setTasks] = useState([]);
@@ -147,14 +149,14 @@ export default function TaskComonents() {
   useEffect(() => {
       const fetchTask = async () => {
         try {
-          // setLoading(true);
+          setLoading(true);
           const response = await userAllTasks(id);
           setTasks(response);
           console.log("Tasks:", response);
-          // setLoading(false);
+          setLoading(false);
         } catch (error) {
           console.log("Error fetching tasks:", error);
-          // setLoading(false);
+          setLoading(false);
         }
       };
       fetchTask();
@@ -162,6 +164,7 @@ export default function TaskComonents() {
 
   return (
     <div className="flex flex-col bg-gray-800 mt-5 rounded-xl ">
+      {loading && <TopLoader/>}
       <h1 className="text-xl sm:text-2xl text-white font-semibold my-3 ml-3">
         New Tasks
       </h1>
@@ -239,7 +242,7 @@ export default function TaskComonents() {
                   <td className="px-6 py-4">{task.start_date}</td>
                   <td className="px-6 py-4">{task.end_date}</td>
                   <td className="px-6 py-4">{task.estimate_time} hrs</td>
-                  {/* <td className="px-6 py-4">{task.completionPercentage}%</td> */}
+                  <td className="px-6 py-4">{task.completion_percentage}%</td>
 
                   <td className="px-6 py-4">
                     <span

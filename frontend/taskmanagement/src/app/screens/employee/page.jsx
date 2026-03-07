@@ -108,7 +108,9 @@ export default function DashboardPage(){
       </div>
 
       <div className="flex items-center gap-10 text-gray-300">
-        <div className="cursor-pointer hover:text-white transition">
+        <div className="cursor-pointer hover:text-white transition"
+        onClick={() => setActivetab("setting")}
+        >
           <Bell height={20} weight={20}/>
         </div>
         <div className="cursor-pointer hover:text-white transition">

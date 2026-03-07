@@ -30,11 +30,11 @@ def get_userbyid(
 
 @task_route.put('/update/{task_id}')
 def update(task_id:int,data: Taskupdate, current_user: dict = Depends(get_current_user)):
-    if current_user["role_id"] != 1:
-        raise HTTPException(
-            status_code=403,
-            detail="Not allowed to update this task"
-        )
+    # if current_user["role_id"] != 1:
+    #     raise HTTPException(
+    #         status_code=403,
+    #         detail="Not allowed to update this task"
+    #     )
     result = update_Task(task_id, data)
 
     return {

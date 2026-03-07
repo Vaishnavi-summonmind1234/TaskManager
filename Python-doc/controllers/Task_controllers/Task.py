@@ -51,7 +51,6 @@ def task(data):
             "created_at": task[10],
             "updated_at": task[11],
             "deleted_at": task[12],
-            "completion_percentage":task[13]
         }
 
     except Exception as e:

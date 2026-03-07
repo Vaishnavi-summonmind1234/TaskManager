@@ -8,6 +8,7 @@ import { Menu } from "lucide-react";
 import { useUser } from "@/app/contexts/userContext";
 import { useRouter } from "next/navigation";
 import { userAllTasks,get_taskby_id } from "@/services/task_services";
+import { getAttachment } from "@/services/attachment_services";
 import { status_update } from "@/services/task_services";
 import { getassignees } from "@/services/assignServices";
 import TopLoader from "@/app/components/loader";
@@ -26,16 +27,7 @@ export default function TaskPage(){
 
 const [status, setStatus] = useState("");
 const [errors, setErrors] = useState({});
-    const [formData, setFormData] = useState({
-  startDate: "",
-  endDate: "",
-  estimatedTime: "",
-  completionPercentage: "",
-  attachments: [],
-  approach: "",
-  comment: "",
-  status: ""
-});
+const [attachments, setAttachments] = useState([]);
 const [allTask, setAllTask] = useState([]);
 const [individualTask, setIndividualTask] = useState({});
 // const [taskAssigment,setTaskAssignment] = useState([])
@@ -64,8 +56,8 @@ useEffect(() => {
           status: singleTask[3],
           priority: singleTask[4],
           assigned_by: singleTask[5],
-          assigned_by_name:singleTask[13],
-          assigned_To_name:singleTask[14],
+          assigned_by_name:singleTask[14],
+          assigned_To_name:singleTask[15],
           start_date: singleTask[6],
           end_date: singleTask[7],
           estimate_time: singleTask[8],
@@ -73,6 +65,7 @@ useEffect(() => {
           created_at: singleTask[10],
           updated_at: singleTask[11],
           deleted_at: singleTask[12],
+          completion_percentage:singleTask[13]
         };
         // console.log("formated task ", formattedTask);
         setIndividualTask(formattedTask);
@@ -97,6 +90,19 @@ useEffect(() => {
       fetchData();
     }
   }, [taskId,id,refreshPage]);
+
+  useEffect(() => {
+      async function fetchAttachament() {
+        try {
+          const response = await getAttachment(taskId);
+          setAttachments(response);
+          console.log("attachment response:", response);
+        } catch (error) {
+          console.log("error while geting attachament", error);
+        }
+      }
+      fetchAttachament();
+    }, [taskId, refreshPage]);
 
   const handleSidebar = () => {
       setOpensidebar(!openSidebar)
@@ -130,49 +136,6 @@ useEffect(() => {
   setCommentInput("");
 };
 
-
-    function handleSubmit(e) {
-  e.preventDefault();
-
-  const newErrors = {};
-
-  if (!formData.startDate) {
-    newErrors.startDate = "Start date is required";
-  }
-
-  if (!formData.endDate) {
-    newErrors.endDate = "End date is required";
-  }
-
-  if (!formData.estimatedTime || formData.estimatedTime <= 0) {
-    newErrors.estimatedTime = "Estimated time must be positive";
-  }
-
-  if (
-    !formData.completionPercentage ||
-    formData.completionPercentage < 0 ||
-    formData.completionPercentage > 100
-  ) {
-    newErrors.completionPercentage =
-      "Completion must be between 0 and 100";
-  }
-
-  if (!status) {
-    newErrors.status = "Please select a status";
-  }
-
-  if (!content || content.trim() === "") {
-    newErrors.approach = "Approach is required";
-  }
-
-  if (Object.keys(newErrors).length > 0) {
-    setErrors(newErrors);
-    return;
-  }
-
-  setErrors({});
-  console.log("Form Data:", formData);
-}
     return(
     <>
         {/* <div className="min-h-screen flex bg-linear-to-br from-gray-900 via-gray-800 to-gray-900 p-2 sm:p-2"> */}
@@ -228,12 +191,15 @@ useEffect(() => {
                   <div>
                     <div className="flex justify-between text-xs text-gray-400 mb-1">
                       <span>Progress</span>
-                      <span>50%</span>
+                      <span>{item.completion_percentage}{"%"}</span>
                     </div>
 
-                    <div className="w-full bg-gray-700 rounded-full h-2">
-                      <div className="bg-green-600 h-2 rounded-full w-[50%]"></div>
-                    </div>
+                    <div className="w-full bg-gray-900 rounded-full h-2">
+      <div
+        className="bg-green-500 h-2 rounded-full transition-all duration-300"
+        style={{ width: `${item.completion_percentage}%` }}
+      ></div>
+    </div>
                   </div>
                 </button>
               ))}
@@ -319,10 +285,28 @@ useEffect(() => {
 
                   <div className="flex gap-4 mt-3 items-center ">
                     <h1 className="text-white text-sm font-semibold">
+                      Completion Percentage :{" "}
+                    </h1>
+                    <span className="px-3 py-1 text-sm text-white">
+                      {individualTask.completion_percentage}{"%"}
+                    </span>
+                  </div>
+
+                  <div className="flex gap-4 mt-3 items-center ">
+                    <h1 className="text-white text-sm font-semibold">
                       Descriptions :{" "}
                     </h1>
                     <span className="px-3 py-1 text-sm text-white">
                       {individualTask.description}
+                    </span>
+                  </div>
+
+                  <div className="flex gap-4 mt-3 items-center ">
+                    <h1 className="text-white text-sm font-semibold">
+                      Approach :{" "}
+                    </h1>
+                    <span className="px-3 py-1 text-sm text-white">
+                      {individualTask.approach}
                     </span>
                   </div>
                 </div>
@@ -348,9 +332,24 @@ useEffect(() => {
 
       <div className="bg-gray-900/60 p-4 rounded-xl flex-1 border border-gray-700">
         <h2 className="text-gray-300 text-sm mb-2">Attachments</h2>
-        <p className="text-indigo-400 text-sm cursor-pointer hover:underline">
-          attachement.pdf
-        </p>
+        {attachments.length > 0 ? (
+                    attachments.map((item) => (
+                      <p
+                        key={item.id}
+                        className="text-indigo-400 text-sm cursor-pointer hover:underline"
+                      >
+                        <a
+                          href={`http://127.0.0.1:8000${item.file_url}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {item.file_name}
+                        </a>
+                      </p>
+                    ))
+                  ) : (
+                    <p className="text-gray-400 text-sm">No attachments</p>
+                  )}
       </div>
 
     </div>
@@ -384,6 +383,7 @@ useEffect(() => {
     role={2} 
     editing={true} 
     handleRefreshPage={handleRefreshPage}
+    individualTask={individualTask}
     />
 
   </div>

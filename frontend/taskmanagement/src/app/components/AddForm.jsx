@@ -139,7 +139,7 @@ export default function AddForm({
       endDate: individualTask?.end_date || "",
       estimatedTime: individualTask?.estimate_time || "",
       approach: individualTask?.approach || "",
-      completionPercentage: individualTask?.completion_percentage || "",
+      completionPercentage: individualTask?.completion_percentage || 0,
       assignedTo: taskAssigment
         ? {
             value: taskAssigment[0].assignedAt_id,
@@ -239,7 +239,7 @@ export default function AddForm({
     }
 
     if (role === 2) {
-      if (!formData.completionPercentage.trim()) {
+      if (!formData.completionPercentage) {
         newErrors.completionPercentage = "Completion Percentage is required";
       }
       if (!formData.approach) {
@@ -349,9 +349,11 @@ export default function AddForm({
       //     console.log("Comments Upload Response", response);
       //   }
       // }
-
-      if (taskId) {
+      console.log("taskId for attachanent:",id)
+      if (id) {
+        let taskId = id
         // Upload Attachments in Parallel
+        console.log("employee user for attachament:",taskId)
         try {
           if (formData.attachments.length > 0) {
             const response = await Promise.all(

@@ -183,7 +183,7 @@ export default function TaskPage() {
                   }
                 >
                   <div className="flex justify-between items-start mb-3">
-                    <h1 className="text-white text-lg font-semibold">
+                    <h1 className="text-white text-sm font-semibold">
                       {item.title}
                     </h1>
 
@@ -198,20 +198,21 @@ export default function TaskPage() {
                     </span>
                   </div>
 
-                  <p className="text-gray-400 text-sm mb-2">
+                  <p className="text-gray-400 text-sm font-semibold mb-2">
                     Assigned to: {taskAssigment[0]?.assignedAt_name}
                   </p>
 
                   <div>
                     <div className="flex justify-between text-xs text-gray-400 mb-1">
                       <span>Progress</span>
-                      <span>{item.completion_percentage}</span>
+                      <span>{item.completion_percentage}%</span>
                     </div>
 
-                    <div className="w-full bg-gray-700 rounded-full h-2">
-                      <div
-                        className={`bg-green-600 h-2 rounded-full w-[${item.completion_percentage}%]`}
-                      ></div>
+                    <div className="w-full bg-gray-900 rounded-full h-2">
+    <div
+      className="bg-green-500 h-2 rounded-full transition-all duration-300"
+      style={{ width: `${item.completion_percentage}%` }}
+    ></div>
                     </div>
                   </div>
                 </button>
