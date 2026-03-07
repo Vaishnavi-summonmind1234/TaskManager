@@ -1,4 +1,4 @@
-from controllers.Task_controllers.Task import task,show_tasks,get_taskby_id,update_Task,delete_Task,update_status,priority_update
+from controllers.Task_controllers.Task import task,show_tasks,get_taskby_id,update_Task,delete_Task,update_status,priority_update,getUserAllTask
 from db.Task_Schemas import TaskCreate,TaskResponse,Taskupdate,StatusUpdate,PrioritySchema,Task_update
 from db.Assign import Assign_schema
 from middleware.admin import admin_acess
@@ -160,3 +160,7 @@ def get_assigned_task(
         raise HTTPException(status_code=403, detail="Not authorized")
  
     return task    
+
+@task_route.get('/{user_id}/userAllTasks', response_model=list[TaskResponse])
+def display_tasks(user_id:int,current_user: dict = Depends(get_current_user)):
+    return getUserAllTask(user_id)

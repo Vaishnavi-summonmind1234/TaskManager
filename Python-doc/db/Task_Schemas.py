@@ -19,6 +19,8 @@ class TaskResponse(BaseModel):
     status: str
     priority: str
     assigned_by: int
+    assigned_by_name: Optional[str] = None
+    employee_name:Optional[str] = None
     start_date: date
     end_date: date
     estimate_time: int
@@ -26,6 +28,7 @@ class TaskResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     deleted_at: Optional[datetime]
+    completion_percentage:Optional[int] = None
     
 class Taskupdate(BaseModel):
     title: Optional[str] = None
@@ -37,6 +40,7 @@ class Taskupdate(BaseModel):
     end_date: Optional[date] = None
     estimate_time: Optional[int] = None
     approach: Optional[str] = None
+    completion_percentage:Optional[int] = None
 
 class StatusUpdate(BaseModel):
     status: str

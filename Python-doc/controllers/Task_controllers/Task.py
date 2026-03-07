@@ -51,6 +51,7 @@ def task(data):
             "created_at": task[10],
             "updated_at": task[11],
             "deleted_at": task[12],
+            "completion_percentage":task[13]
         }
 
     except Exception as e:
@@ -68,7 +69,7 @@ def show_tasks():
             SELECT id, title, description, status, priority,
                    assigned_by, start_date, end_date,
                    estimate_time, approach,
-                   created_at, updated_at, deleted_at
+                   created_at, updated_at, deleted_at,completion_percentage
             FROM tasks
             WHERE deleted_at IS NULL
         """)
@@ -92,7 +93,8 @@ def show_tasks():
                 approach=row[9],
                 created_at=row[10],
                 updated_at=row[11],
-                deleted_at=row[12]
+                deleted_at=row[12],
+                completion_percentage=row[13 ]
             )
             for row in rows
         ]
@@ -107,6 +109,7 @@ def show_tasks():
     finally:
         cur.close()
         con.close()
+
 def get_taskby_id(task_id:int):
     con=get_connection()
     if not con:
@@ -114,7 +117,19 @@ def get_taskby_id(task_id:int):
     try:
         cur=con.cursor()
         cur.execute(
-            """SELECT * FROM tasks WHERE id = %s""",
+            """SELECT 
+                t.*,
+                admin.name AS admin_name,
+                emp.name AS employee_name
+            FROM tasks t
+            LEFT JOIN users admin
+                ON admin.id = t.assigned_by
+            LEFT JOIN task_assignments ta
+                ON ta.task_id = t.id
+            LEFT JOIN users emp
+                ON emp.id = ta.user_id
+            WHERE t.id = %s
+            """,
             (task_id,)   
         )
         required_task=cur.fetchone()
@@ -123,6 +138,7 @@ def get_taskby_id(task_id:int):
         return required_task
     except Exception as e:
         print(e)
+
 def update_Task(id:int,data):
     con=get_connection()
     if not con:
@@ -137,33 +153,35 @@ def update_Task(id:int,data):
             con.close()
             raise HTTPException(status_code=404, detail="Task not found")
         cur.execute("""
-    UPDATE tasks
-    SET
-        title = %s,
-        description = %s,
-        status = %s,
-        priority = %s,
-        assigned_by = %s,
-        start_date = %s,
-        end_date = %s,
-        estimate_time = %s,
-        approach = %s,
-        updated_at = NOW()
-    WHERE id = %s
-    RETURNING
-        id,
-        title,
-        description,
-        status,
-        priority,
-        assigned_by,
-        start_date,
-        end_date,
-        estimate_time,
-        approach,
-        created_at,
-        updated_at,
-        deleted_at
+UPDATE tasks
+SET
+    title = COALESCE(%s, title),
+    description = COALESCE(%s, description),
+    status = COALESCE(%s, status),
+    priority = COALESCE(%s, priority),
+    assigned_by = COALESCE(%s, assigned_by),
+    start_date = COALESCE(%s, start_date),
+    end_date = COALESCE(%s, end_date),
+    estimate_time = COALESCE(%s, estimate_time),
+    approach = COALESCE(%s, approach),
+    completion_percentage = COALESCE(%s, completion_percentage),
+    updated_at = NOW()
+WHERE id = %s
+RETURNING
+    id,
+    title,
+    description,
+    status,
+    priority,
+    assigned_by,
+    start_date,
+    end_date,
+    estimate_time,
+    approach,
+    created_at,
+    updated_at,
+    deleted_at,
+    completion_percentage
 """, (
     data.title,
     data.description,
@@ -174,7 +192,8 @@ def update_Task(id:int,data):
     data.end_date,
     data.estimate_time,
     data.approach,
-    id
+    data.completion_percentage,
+    id,
 ))
 
 
@@ -216,7 +235,8 @@ def delete_Task(id:int):
         approach,
         created_at,
         updated_at,
-        deleted_at
+        deleted_at,
+        completion_percentage
         """, (id,))
 
         deleted_task=cur.fetchone()
@@ -308,6 +328,60 @@ def UserTask(user_id: int, task_id: int):
  
         task = cur.fetchone()
         return task
+    finally:
+        cur.close()
+        con.close()
+
+def getUserAllTask(user_id:int):
+    con = get_connection()
+    cur = con.cursor()
+    try:
+        cur.execute("""
+            SELECT 
+                t.*, 
+                u.name AS assigned_by_name
+            FROM tasks t
+            JOIN task_assignments ta
+                ON ta.task_id = t.id
+            LEFT JOIN users u
+                ON u.id = t.assigned_by
+            WHERE t.deleted_at IS NULL 
+            AND ta.user_id = %s
+        """, [user_id])
+        
+        rows = cur.fetchall()
+        for row in rows:
+           print("ROW:", row)
+
+
+        tasks = [
+            TaskResponse(
+                id=row[0],
+                title=row[1],
+                description=row[2],
+                status=row[3].value if hasattr(row[3], "value") else str(row[3]),
+                priority=row[4].value if hasattr(row[4], "value") else str(row[4]),
+                assigned_by=row[5],
+                assigned_by_name=row[14] if row[14] else None,
+                start_date=row[6],
+                end_date=row[7],
+                estimate_time=row[8],
+                approach=row[9],
+                created_at=row[10],
+                updated_at=row[11],
+                deleted_at=row[12],
+                completion_percentage=row[13]
+            )
+            for row in rows
+        ]
+
+        return tasks
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
     finally:
         cur.close()
         con.close()
